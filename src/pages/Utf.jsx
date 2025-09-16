@@ -90,7 +90,7 @@ const Utf = () => {
   // Üretim formu
   const handleChange = (e) => {
     const { name, value } = e.target;
-    let newForm = { ...form, [name]: value };
+    const newForm = { ...form, [name]: value };
     
     // Vardiya otomatik ayarlama
     if (name === 'pause_baslangic' || name === 'pause_bitis') {

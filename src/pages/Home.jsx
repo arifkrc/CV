@@ -81,17 +81,7 @@ const Home = () => {
               >
                 Merhaba,
               </span>
-              <span 
-                className={`${isVisible ? 'animate-fade-slow' : ''}`} 
-                style={{ 
-                  animationDelay: '1.2s',
-                  color: 'var(--secondary-color)',
-                  fontWeight: '700',
-                  opacity: 0
-                }}
-              >
-                arifk.co
-              </span>
+            
             </h1>
             <p 
               className={`subtitle ${isVisible ? 'animate-fadeInUp' : ''}`} 

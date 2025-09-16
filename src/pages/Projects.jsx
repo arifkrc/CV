@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, Github, CalendarDays, Tag, Layers3, Globe, Smartphone, BarChart3, Brain, Zap, Cpu } from 'lucide-react';
+import { ArrowUpRight, Github, CalendarDays, Layers3, Globe, BarChart3, Zap } from 'lucide-react';
 
 const Projects = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
