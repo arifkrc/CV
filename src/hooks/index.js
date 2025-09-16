@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Scroll Progress Hook
 export const useScrollProgress = () => {
@@ -35,70 +36,37 @@ export const useScrollProgress = () => {
   return scrollProgress;
 };
 
-// Page Visibility Hook
-export const usePageVisibility = () => {
-  const [isVisible, setIsVisible] = useState(false);
+// Navigation Hook for smooth page transitions
+export const usePageNavigation = () => {
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    // Scroll to top on page load/refresh
-    window.scrollTo(0, 0);
-    setIsVisible(true);
-  }, []);
-
-  return isVisible;
-};
-
-// Intersection Observer Hook
-export const useIntersectionObserver = (options = {}) => {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const [targetElement, setTargetElement] = useState(null);
-
-  useEffect(() => {
-    if (!targetElement) return;
-
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px',
-      ...options
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        setIsIntersecting(entry.isIntersecting);
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animated');
-        }
+  const navigateWithTransition = (path) => {
+    // Smooth transition effect
+    document.body.style.opacity = '0.95';
+    document.body.style.transition = 'opacity 0.2s ease';
+    
+    setTimeout(() => {
+      navigate(path);
+      
+      // Scroll to top smoothly
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
       });
-    }, observerOptions);
-
-    observer.observe(targetElement);
-
-    return () => observer.disconnect();
-  }, [targetElement, options]);
-
-  return [setTargetElement, isIntersecting];
-};
-
-// Local Storage Hook
-export const useLocalStorage = (key, initialValue) => {
-  const [storedValue, setStoredValue] = useState(() => {
-    try {
-      const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      return initialValue;
-    }
-  });
-
-  const setValue = (value) => {
-    try {
-      setStoredValue(value);
-      window.localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error setting localStorage:', error);
-    }
+      
+      // Restore opacity
+      setTimeout(() => {
+        document.body.style.opacity = '1';
+      }, 100);
+    }, 150);
   };
 
-  return [storedValue, setValue];
+  return navigateWithTransition;
+};
+
+// Page initialization hook (scroll to top)
+export const usePageInit = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 };

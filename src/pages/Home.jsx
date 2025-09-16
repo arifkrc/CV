@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MessageCircle, FolderOpen, ArrowRight, Sparkles } from 'lucide-react';
+import { FolderOpen, ArrowRight } from 'lucide-react';
+import { usePageNavigation, usePageInit } from '../hooks';
 
 const Home = () => {
-  const navigate = useNavigate();
+  const navigateWithTransition = usePageNavigation();
+  usePageInit(); // Scroll to top on page load
   const [counters, setCounters] = useState({ years: 0, projects: 0, satisfaction: 0 });
   const [isVisible, setIsVisible] = useState(false);
 
   // Counter animation effect
   useEffect(() => {
-    // Scroll to top on page load/refresh
-    window.scrollTo(0, 0);
-    
     setIsVisible(true);
     const timer = setTimeout(() => {
       animateCounters();
@@ -46,24 +44,7 @@ const Home = () => {
   };
   
   const handleNavigation = (path) => {
-    // Smooth transition effect
-    document.body.style.opacity = '0.95';
-    document.body.style.transition = 'opacity 0.2s ease';
-    
-    setTimeout(() => {
-      navigate(path);
-      
-      // Scroll to top smoothly
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-      
-      // Restore opacity
-      setTimeout(() => {
-        document.body.style.opacity = '1';
-      }, 100);
-    }, 150);
+    navigateWithTransition(path);
   };
 
   return (

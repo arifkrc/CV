@@ -1,14 +1,12 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
+import { usePageNavigation, usePageInit } from '../hooks';
 
 const About = () => {
-  const navigate = useNavigate();
+  const navigateWithTransition = usePageNavigation();
+  usePageInit(); // Scroll to top on page load
 
   useEffect(() => {
-    // Scroll to top on page load/refresh
-    window.scrollTo(0, 0);
-    
     const observerOptions = {
       threshold: 0.1,
       rootMargin: '0px 0px -100px 0px'
@@ -39,24 +37,7 @@ const About = () => {
   }, []);
   
   const handleNavigation = (path) => {
-    // Smooth transition effect
-    document.body.style.opacity = '0.95';
-    document.body.style.transition = 'opacity 0.2s ease';
-    
-    setTimeout(() => {
-      navigate(path);
-      
-      // Scroll to top smoothly
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-      
-      // Restore opacity
-      setTimeout(() => {
-        document.body.style.opacity = '1';
-      }, 100);
-    }, 150);
+    navigateWithTransition(path);
   };
 
   const skills = [
