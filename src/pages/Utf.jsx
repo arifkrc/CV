@@ -244,6 +244,18 @@ const Utf = () => {
 
   return (
     <div className="section" style={{ minHeight: '100vh', background: 'var(--background-light)' }}>
+      <div style={{
+        background: 'var(--bg-light)',
+        color: 'var(--text-light)',
+        border: '1px solid var(--border-light)',
+        borderRadius: '8px',
+        padding: '1rem 1.5rem',
+        margin: '2rem auto',
+        fontSize: '1.05rem',
+        maxWidth: '600px'
+      }}>
+        <strong>Not:</strong> Bu sayfa, <b>Üretim Takip Otomasyonu</b> projesinin bir prototipidir. <a href="https://github.com/arifkrc/TakipUI" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--link)', textDecoration: 'underline', fontWeight: 500 }}>Ana projeye göz atmak için tıklayın</a>.
+      </div>
       <div className="container" style={{ maxWidth: 1400, margin: '0 auto', padding: '2rem 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h2 style={{ color: 'var(--primary-color)', textAlign: 'center' }}>Takip Formları</h2>

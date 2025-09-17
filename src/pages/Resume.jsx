@@ -69,19 +69,7 @@ const Resume = () => {
   };
 
   const experiences = [
-    {
-      id: 't01',
-      title: "Kıdemli Endüstri Mühendisi",
-      company: "İmalat Şirketi",
-      period: "2021 - Günümüz",
-      location: "İstanbul",
-      description: [
-        "Süreçleri optimize ederek %20 verimlilik artışı sağladım",
-        "Kalite kontrol prosedürlerini geliştirdim",
-        "Proje yönetimi ve ekip liderliği yaptım",
-        "Lean Manufacturing metodolojilerini uyguladım"
-      ]
-    },
+    
     {
       id: 't03',
       title: "Endüstri Mühendisi",
@@ -156,6 +144,18 @@ const Resume = () => {
     <div className="section">
       <div className="container">
         <h2 className="section-title">Özgeçmiş</h2>
+        <div style={{
+          background: 'var(--bg-light)',
+          color: 'var(--text-light)',
+          border: '1px solid var(--border-light)',
+          borderRadius: '8px',
+          padding: '1rem 1.5rem',
+          marginBottom: '2rem',
+          fontSize: '1.05rem',
+          maxWidth: '600px'
+        }}>
+          <strong>Not:</strong> Bu sayfadaki özgeçmiş verileri gerçeği kısmen yansıtmaktadır ve sayfa geliştirilmeye devam edilmektedir.
+        </div>
         
         {/* İş Deneyimleri */}
         <div style={{ marginBottom: '4rem' }}>
