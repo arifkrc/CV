@@ -17,8 +17,8 @@ const Projects = () => {
       date: '2024-05',
       category: 'automation',
       technologies: ['.NET 8', 'Entity Framework Core', 'FluentValidation', 'ElectronJS', 'SQL Server'],
-      paragraphs: [
-          'Staj süresince gözlemlediğim en önemli sorunlardan biri, farklı Excel dosyaları arasında manuel veri aktarımının yapılması ve bu verilerin raporlanmasının otomatikleştirilmemiş olmasıdır. Bu durum, hem zaman kaybına hem de insan hatasına açık bir süreç oluşturmaktadır. Üretim, paketleme ve sipariş bilgilerinin tutarlı şekilde yönetilememesi planlama biriminde iş yükünü artırmakta ve karar alma süreçlerini yavaşlatmaktadır.',
+    paragraphs: [
+          'Staj süresince gözlemlediğim en önemli sorunlardan biri, aynı veri setlerinin farklı Excel dosyaları ve raporlama ihtiyaçları için tekrar tekrar manuel olarak işlenmesi ve aktarılmasıydı. Bu süreç, hem ciddi zaman ve emek kaybına hem de insan hatasına açık bir ortam oluşturmaktaydı. Verilerin merkezi ve kümülatif biçimde tek seferde sisteme girilmesi ve sonrasında otomatik filtreleme ile raporlanmasının; iş yükünü azaltacağı, hata oranını düşüreceği ve karar destek sistemlerine daha hızlı ve güvenilir veri sağlayacağı tespit edilmiştir.',
           'Projenin amacı: Veri girişinden sonra tüm raporlamaların ve özetlerin otomatik olarak üretilmesini sağlamak; manuel veri aktarımını ortadan kaldırmak; üretim, paketleme ve sipariş verilerini tek bir merkezde toplamak; departmanlar arası bilgi akışını hızlandırmak; zaman tasarrufu sağlarken raporların güvenilirliğini artırmak.',
           'Sağlananlar: Otomatik raporlama, sipariş takibi, paketleme işlemlerinin otomatik eşleştirilmesi ve CSV/XLSX dışa aktarma desteği. Backend .NET 8 Web API, Entity Framework Core ve FluentValidation; frontend olarak ElectronJS masaüstü uygulaması; veritabanı olarak SQL Server kullanıldı.',
           'Sonuç: Planlama biriminin iş yükü azaldı, veri giriş hataları azaltıldı, sipariş tahsisleri ve kalan miktar hesaplamaları otomatikleştirildi.',
