@@ -29,18 +29,10 @@ const Resume = () => {
   }, []);
 
   useEffect(() => {
-    const timelineItems = document.querySelectorAll('.timeline-node');
     const educationItems = document.querySelectorAll('.education-item');
     const certificateItems = document.querySelectorAll('.certificate-item');
     const experienceItems = document.querySelectorAll('.skill-item:not(.education-item):not(.certificate-item)');
     
-    timelineItems.forEach((item, index) => {
-      item.dataset.index = index;
-      if (observerRef.current) {
-        observerRef.current.observe(item);
-      }
-    });
-
     educationItems.forEach((item, index) => {
       item.dataset.index = `edu-${index}`;
       if (observerRef.current) {
@@ -65,7 +57,7 @@ const Resume = () => {
 
     return () => {
       if (observerRef.current) {
-        [...timelineItems, ...educationItems, ...certificateItems, ...experienceItems].forEach(item => {
+        [...educationItems, ...certificateItems, ...experienceItems].forEach(item => {
           observerRef.current.unobserve(item);
         });
       }
@@ -83,7 +75,6 @@ const Resume = () => {
       company: "İmalat Şirketi",
       period: "2021 - Günümüz",
       location: "İstanbul",
-      position: { x: 50, y: 85, pathProgress: 0.05 }, // Start/Finish area
       description: [
         "Süreçleri optimize ederek %20 verimlilik artışı sağladım",
         "Kalite kontrol prosedürlerini geliştirdim",
@@ -97,7 +88,6 @@ const Resume = () => {
       company: "XYZ Corporation",
       period: "2019 - 2021",
       location: "Ankara",
-      position: { x: 12, y: 45, pathProgress: 0.25 }, // Turn 3 area
       description: [
         "Operasyonel süreçleri analiz ettim ve iyileştirdim",
         "Risk analizleri gerçekleştirdim",
@@ -111,7 +101,6 @@ const Resume = () => {
       company: "Tech Solutions Ltd.",
       period: "2018 - 2019",
       location: "İstanbul",
-      position: { x: 75, y: 12, pathProgress: 0.55 }, // Turn 9 area
       description: [
         "React ve Node.js ile web uygulamaları geliştirdim",
         "RESTful API tasarımı ve implementasyonu",
@@ -125,7 +114,6 @@ const Resume = () => {
       company: "Endüstri Firması A.Ş.",
       period: "2017 - 2018",
       location: "Bursa",
-      position: { x: 80, y: 65, pathProgress: 0.75 }, // Turn 13 area
       description: [
         "Üretim hatlarında veri toplama ve analiz",
         "Kalite kontrol prosedürlerini öğrendim",
@@ -139,7 +127,6 @@ const Resume = () => {
       company: "Startup Teknoloji",
       period: "2016 - 2017",
       location: "İstanbul",
-      position: { x: 40, y: 82, pathProgress: 0.95 }, // Turn 16 area
       description: [
         "Mobile uygulama geliştirme projelerinde yer aldım",
         "JavaScript ve Python ile küçük projeler geliştirdim",
@@ -150,26 +137,18 @@ const Resume = () => {
   ];
 
   const education = [
-    {
-      degree: "Yüksek Lisans",
-      field: "Endüstri Mühendisliği",
-      school: "Teknik Üniversite",
-      period: "2017 - 2019",
-      gpa: "3.7/4.0"
-    },
+    
     {
       degree: "Lisans",
       field: "Endüstri Mühendisliği",
-      school: "Devlet Üniversitesi",
-      period: "2013 - 2017",
-      gpa: "3.5/4.0"
+      school: "Konya Teknik Üniversitesi",
+      
     },
     {
-      degree: "Lise",
-      field: "Fen Bilimleri",
-      school: "Anadolu Lisesi",
-      period: "2009 - 2013",
-      gpa: "4.2/5.0"
+      degree: "Önlisans",
+      field: "Bilgisayar Programcılığı",
+      school: "Hacettepe Üniversitesi",
+    
     }
   ];
 
@@ -178,11 +157,11 @@ const Resume = () => {
       <div className="container">
         <h2 className="section-title">Özgeçmiş</h2>
         
-        {/* İş Deneyimi Timeline */}
+        {/* İş Deneyimleri */}
         <div style={{ marginBottom: '4rem' }}>
           <h3 style={{ 
             fontSize: '2rem', 
-            marginBottom: '3rem', 
+            marginBottom: '2rem', 
             color: 'var(--primary-color)',
             display: 'flex',
             alignItems: 'center',
@@ -191,67 +170,6 @@ const Resume = () => {
           }}>
             <Building2 size={24} />
             İş Deneyimlerim
-          </h3>
-          
-          {/* Timeline Container */}
-          <div className="timeline-container">
-            <div className="timeline-line"></div>
-            
-            {experiences.map((exp, index) => (
-              <div 
-                key={index}
-                className={`timeline-item ${visibleItems.has(index.toString()) ? 'animate-timeline-item' : ''}`}
-                style={{
-                  '--delay': `${index * 0.2}s`
-                }}
-                onClick={() => handleExperienceClick(index)}
-              >
-                <div className="timeline-dot">
-                  <span className="timeline-year">{exp.period.split(' - ')[0]}</span>
-                </div>
-                
-                <div className={`timeline-content ${selectedExperience === index ? 'expanded' : ''}`}>
-                  <div className="timeline-header">
-                    <h4>{exp.title}</h4>
-                    <div className="company-info">
-                      <span className="company-name">{exp.company}</span>
-                      <span className="location">
-                        <MapPin size={14} />
-                        {exp.location}
-                      </span>
-                    </div>
-                    <span className="period-badge">{exp.period}</span>
-                  </div>
-                  
-                  {selectedExperience === index && (
-                    <div className="timeline-details">
-                      <h5>Sorumluluklar & Başarılar:</h5>
-                      <ul>
-                        {exp.description.map((item, i) => (
-                          <li key={i}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* İş Deneyimi Kartları */}
-        <div style={{ marginBottom: '4rem' }}>
-          <h3 style={{ 
-            fontSize: '1.8rem', 
-            marginBottom: '2rem', 
-            color: 'var(--primary-color)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            textAlign: 'left'
-          }}>
-            <Building2 size={20} />
-            Detaylı İş Deneyimleri
           </h3>
           
           <div className="skills-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
@@ -394,11 +312,8 @@ const Resume = () => {
                   fontSize: '0.9rem',
                   color: 'var(--text-light)'
                 }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <CalendarDays size={14} />
-                    {edu.period}
-                  </span>
-                  <span>GPA: {edu.gpa}</span>
+                  
+                  
                 </div>
               </div>
             ))}
@@ -407,6 +322,7 @@ const Resume = () => {
 
         {/* Sertifikalar & Projeler */}
         <div style={{ marginBottom: '4rem' }}>
+          <br />
           <h3 style={{ 
             fontSize: '2rem', 
             marginBottom: '2rem', 

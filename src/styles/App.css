@@ -316,29 +316,582 @@ main {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.hero-image {
+.hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 400px;
+}
+
+.visual-container {
+  position: relative;
+  width: 350px;
+  height: 350px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.profile-image {
+/* Geometric Shapes */
+.geometric-shape {
+  position: absolute;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+  opacity: 0.1;
+  animation: float 6s ease-in-out infinite;
+}
+
+.shape-1 {
+  width: 100px;
+  height: 100px;
+  top: 10%;
+  left: 10%;
+  animation-delay: 0s;
+  transform: rotate(45deg);
+}
+
+.shape-2 {
+  width: 60px;
+  height: 60px;
+  top: 20%;
+  right: 15%;
+  animation-delay: 2s;
+  border-radius: 50%;
+}
+
+.shape-3 {
+  width: 80px;
+  height: 80px;
+  bottom: 15%;
+  left: 20%;
+  animation-delay: 4s;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  border-radius: 0;
+}
+
+/* Floating Cards Base Styles */
+.floating-card {
+  background: var(--background-light);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.8rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 70px;
+  text-align: center;
+  transform-style: preserve-3d;
+}
+
+.floating-card:hover {
+  transform: scale(1.1) translateZ(20px) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+.dark-theme .floating-card {
+  background: var(--background-gray);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.card-icon {
+  font-size: 1.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.card-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Technology cards styling */
+.tech-card-1 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.tech-card-2 {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border: none;
+}
+
+.tech-card-3 {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  border: none;
+}
+
+.tech-card-1 .card-text,
+.tech-card-2 .card-text,
+.tech-card-3 .card-text {
+  color: white;
+  font-weight: 600;
+}
+
+.dark-theme .tech-card-1,
+.dark-theme .tech-card-2,
+.dark-theme .tech-card-3 {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* 6 Individual Orbital System - Each card has its own unique orbit */
+.visual-container {
+  position: relative;
   width: 350px;
   height: 350px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.individual-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-style: preserve-3d;
+}
+
+/* Orbit 1 - Horizontal ellipse, close to center */
+.orbit-1 {
+  width: 180px;
+  height: 90px;
+  transform: translate(-50%, -50%) rotateX(80deg);
+  animation: rotate-orbit-1 18s linear infinite;
+}
+
+/* Orbit 2 - Vertical ellipse, tilted */
+.orbit-2 {
+  width: 220px;
+  height: 110px;
+  transform: translate(-50%, -50%) rotateX(10deg) rotateZ(90deg);
+  animation: rotate-orbit-2 22s linear infinite reverse;
+}
+
+/* Orbit 3 - Diagonal ellipse, medium size */
+.orbit-3 {
+  width: 260px;
+  height: 130px;
+  transform: translate(-50%, -50%) rotateX(60deg) rotateY(45deg);
+  animation: rotate-orbit-3 26s linear infinite;
+}
+
+/* Orbit 4 - Large horizontal ellipse */
+.orbit-4 {
+  width: 300px;
+  height: 150px;
+  transform: translate(-50%, -50%) rotateX(75deg) rotateZ(30deg);
+  animation: rotate-orbit-4 30s linear infinite reverse;
+}
+
+/* Orbit 5 - Steep diagonal ellipse */
+.orbit-5 {
+  width: 240px;
+  height: 120px;
+  transform: translate(-50%, -50%) rotateX(20deg) rotateY(-60deg);
+  animation: rotate-orbit-5 24s linear infinite;
+}
+
+/* Orbit 6 - Complex tilted ellipse */
+.orbit-6 {
+  width: 320px;
+  height: 160px;
+  transform: translate(-50%, -50%) rotateX(65deg) rotateY(30deg) rotateZ(-45deg);
+  animation: rotate-orbit-6 28s linear infinite reverse;
+}
+
+/* Individual orbital card positioning */
+.individual-orbit .orbital-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-style: preserve-3d;
+}
+
+/* Orbit 1 positioning */
+.orbit-1 .tech-card-1 {
+  transform: translate(-50%, -50%) translateX(90px) rotateX(-80deg);
+  animation: counter-rotate-1 18s linear infinite reverse;
+}
+
+/* Orbit 2 positioning */
+.orbit-2 .tech-card-2 {
+  transform: translate(-50%, -50%) translateX(110px) rotateX(-10deg) rotateZ(-90deg);
+  animation: counter-rotate-2 22s linear infinite;
+}
+
+/* Orbit 3 positioning */
+.orbit-3 .tech-card-3 {
+  transform: translate(-50%, -50%) translateX(130px) rotateX(-60deg) rotateY(-45deg);
+  animation: counter-rotate-3 26s linear infinite reverse;
+}
+
+/* Orbit 4 positioning */
+.orbit-4 .card-1 {
+  transform: translate(-50%, -50%) translateX(150px) rotateX(-75deg) rotateZ(-30deg);
+  animation: counter-rotate-4 30s linear infinite;
+}
+
+/* Orbit 5 positioning */
+.orbit-5 .card-2 {
+  transform: translate(-50%, -50%) translateX(120px) rotateX(-20deg) rotateY(60deg);
+  animation: counter-rotate-5 24s linear infinite reverse;
+}
+
+/* Orbit 6 positioning */
+.orbit-6 .card-3 {
+  transform: translate(-50%, -50%) translateX(160px) rotateX(-65deg) rotateY(-30deg) rotateZ(45deg);
+  animation: counter-rotate-6 28s linear infinite;
+}
+
+/* 6 Different Orbital Animations */
+@keyframes rotate-orbit-1 {
+  from { transform: translate(-50%, -50%) rotateX(80deg) rotateY(0deg); }
+  to { transform: translate(-50%, -50%) rotateX(80deg) rotateY(360deg); }
+}
+
+@keyframes rotate-orbit-2 {
+  from { transform: translate(-50%, -50%) rotateX(10deg) rotateZ(90deg) rotateY(0deg); }
+  to { transform: translate(-50%, -50%) rotateX(10deg) rotateZ(90deg) rotateY(360deg); }
+}
+
+@keyframes rotate-orbit-3 {
+  from { transform: translate(-50%, -50%) rotateX(60deg) rotateY(45deg) rotateZ(0deg); }
+  to { transform: translate(-50%, -50%) rotateX(60deg) rotateY(45deg) rotateZ(360deg); }
+}
+
+@keyframes rotate-orbit-4 {
+  from { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(30deg) rotateY(0deg); }
+  to { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(30deg) rotateY(360deg); }
+}
+
+@keyframes rotate-orbit-5 {
+  from { transform: translate(-50%, -50%) rotateX(20deg) rotateY(-60deg) rotateZ(0deg); }
+  to { transform: translate(-50%, -50%) rotateX(20deg) rotateY(-60deg) rotateZ(360deg); }
+}
+
+@keyframes rotate-orbit-6 {
+  from { transform: translate(-50%, -50%) rotateX(65deg) rotateY(30deg) rotateZ(-45deg); }
+  to { transform: translate(-50%, -50%) rotateX(65deg) rotateY(30deg) rotateZ(-45deg) rotateY(360deg); }
+}
+
+/* 6 Different Counter-rotation Animations */
+@keyframes counter-rotate-1 {
+  from { transform: translate(-50%, -50%) translateX(90px) rotateX(-80deg) rotateY(0deg); }
+  to { transform: translate(-50%, -50%) translateX(90px) rotateX(-80deg) rotateY(-360deg); }
+}
+
+@keyframes counter-rotate-2 {
+  from { transform: translate(-50%, -50%) translateX(110px) rotateX(-10deg) rotateZ(-90deg) rotateY(0deg); }
+  to { transform: translate(-50%, -50%) translateX(110px) rotateX(-10deg) rotateZ(-90deg) rotateY(-360deg); }
+}
+
+@keyframes counter-rotate-3 {
+  from { transform: translate(-50%, -50%) translateX(130px) rotateX(-60deg) rotateY(-45deg) rotateZ(0deg); }
+  to { transform: translate(-50%, -50%) translateX(130px) rotateX(-60deg) rotateY(-45deg) rotateZ(-360deg); }
+}
+
+@keyframes counter-rotate-4 {
+  from { transform: translate(-50%, -50%) translateX(150px) rotateX(-75deg) rotateZ(-30deg) rotateY(0deg); }
+  to { transform: translate(-50%, -50%) translateX(150px) rotateX(-75deg) rotateZ(-30deg) rotateY(-360deg); }
+}
+
+@keyframes counter-rotate-5 {
+  from { transform: translate(-50%, -50%) translateX(120px) rotateX(-20deg) rotateY(60deg) rotateZ(0deg); }
+  to { transform: translate(-50%, -50%) translateX(120px) rotateX(-20deg) rotateY(60deg) rotateZ(-360deg); }
+}
+
+@keyframes counter-rotate-6 {
+  from { transform: translate(-50%, -50%) translateX(160px) rotateX(-65deg) rotateY(-30deg) rotateZ(45deg); }
+  to { transform: translate(-50%, -50%) translateX(160px) rotateX(-65deg) rotateY(-30deg) rotateZ(45deg) rotateZ(-360deg); }
+}
+
+/* Central element z-index for 3D effect */
+.central-element {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  transform: translateZ(30px);
+}
+
+.card-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Central Element */
+.central-element {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border: 3px solid var(--secondary-color);
   border-radius: 50%;
-  object-fit: cover;
-  border: 6px solid var(--background-light);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  animation: pulse-ring 2s ease-out infinite;
+  opacity: 0.3;
 }
 
-.dark-theme .profile-image {
-  border: 8px solid var(--background-gray);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+.central-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+  animation: gentle-float 3s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 }
 
-.profile-image:hover {
-  transform: scale(1.05);
+.central-icon::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shine 3s ease-in-out infinite;
+}
+
+.icon-text {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+/* Animations */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  50% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+}
+
+/* Mobile Responsive for 6 Individual Orbits */
+@media (max-width: 768px) {
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: center;
+  }
+  
+  .hero-text h1 {
+    font-size: 2.5rem;
+  }
+  
+  .hero-visual {
+    height: 300px;
+    order: -1;
+  }
+  
+  .visual-container {
+    width: 280px;
+    height: 280px;
+    perspective: 700px;
+  }
+  
+  /* Mobile orbital sizing - scaled down */
+  .orbit-1 {
+    width: 140px;
+    height: 70px;
+  }
+  
+  .orbit-2 {
+    width: 160px;
+    height: 80px;
+  }
+  
+  .orbit-3 {
+    width: 180px;
+    height: 90px;
+  }
+  
+  .orbit-4 {
+    width: 200px;
+    height: 100px;
+  }
+  
+  .orbit-5 {
+    width: 170px;
+    height: 85px;
+  }
+  
+  .orbit-6 {
+    width: 220px;
+    height: 110px;
+  }
+  
+  /* Mobile orbital card positioning - scaled down */
+  .orbit-1 .tech-card-1 {
+    transform: translate(-50%, -50%) translateX(70px) rotateX(-80deg);
+  }
+  
+  .orbit-2 .tech-card-2 {
+    transform: translate(-50%, -50%) translateX(80px) rotateX(-10deg) rotateZ(-90deg);
+  }
+  
+  .orbit-3 .tech-card-3 {
+    transform: translate(-50%, -50%) translateX(90px) rotateX(-60deg) rotateY(-45deg);
+  }
+  
+  .orbit-4 .card-1 {
+    transform: translate(-50%, -50%) translateX(100px) rotateX(-75deg) rotateZ(-30deg);
+  }
+  
+  .orbit-5 .card-2 {
+    transform: translate(-50%, -50%) translateX(85px) rotateX(-20deg) rotateY(60deg);
+  }
+  
+  .orbit-6 .card-3 {
+    transform: translate(-50%, -50%) translateX(110px) rotateX(-65deg) rotateY(-30deg) rotateZ(45deg);
+  }
+  
+  /* Mobile counter-rotate animations - scaled */
+  @keyframes counter-rotate-1 {
+    from { transform: translate(-50%, -50%) translateX(70px) rotateX(-80deg) rotateY(0deg); }
+    to { transform: translate(-50%, -50%) translateX(70px) rotateX(-80deg) rotateY(-360deg); }
+  }
+
+  @keyframes counter-rotate-2 {
+    from { transform: translate(-50%, -50%) translateX(80px) rotateX(-10deg) rotateZ(-90deg) rotateY(0deg); }
+    to { transform: translate(-50%, -50%) translateX(80px) rotateX(-10deg) rotateZ(-90deg) rotateY(-360deg); }
+  }
+
+  @keyframes counter-rotate-3 {
+    from { transform: translate(-50%, -50%) translateX(90px) rotateX(-60deg) rotateY(-45deg) rotateZ(0deg); }
+    to { transform: translate(-50%, -50%) translateX(90px) rotateX(-60deg) rotateY(-45deg) rotateZ(-360deg); }
+  }
+
+  @keyframes counter-rotate-4 {
+    from { transform: translate(-50%, -50%) translateX(100px) rotateX(-75deg) rotateZ(-30deg) rotateY(0deg); }
+    to { transform: translate(-50%, -50%) translateX(100px) rotateX(-75deg) rotateZ(-30deg) rotateY(-360deg); }
+  }
+
+  @keyframes counter-rotate-5 {
+    from { transform: translate(-50%, -50%) translateX(85px) rotateX(-20deg) rotateY(60deg) rotateZ(0deg); }
+    to { transform: translate(-50%, -50%) translateX(85px) rotateX(-20deg) rotateY(60deg) rotateZ(-360deg); }
+  }
+
+  @keyframes counter-rotate-6 {
+    from { transform: translate(-50%, -50%) translateX(110px) rotateX(-65deg) rotateY(-30deg) rotateZ(45deg); }
+    to { transform: translate(-50%, -50%) translateX(110px) rotateX(-65deg) rotateY(-30deg) rotateZ(45deg) rotateZ(-360deg); }
+  }
+  
+  .floating-card {
+    padding: 0.6rem;
+    min-width: 60px;
+  }
+  
+  .card-icon {
+    font-size: 1.1rem;
+  }
+  
+  .card-text {
+    font-size: 0.65rem;
+  }
+  
+  .central-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .icon-text {
+    font-size: 1.4rem;
+  }
+  
+  .pulse-ring {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .about-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-buttons {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .hero-buttons .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 15px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
+/* Tablet Responsive for About Skills Grid */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .skills-section div[style*="grid-template-columns"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.2rem !important;
+  }
 }
 
 /* Page Transitions */

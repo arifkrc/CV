@@ -1,10 +1,20 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { usePageNavigation, usePageInit } from '../hooks';
 
 const About = () => {
   const navigateWithTransition = usePageNavigation();
   usePageInit(); // Scroll to top on page load
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const observerOptions = {
@@ -16,16 +26,6 @@ const About = () => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('animated');
-          
-          // Skills bar animation
-          if (entry.target.classList.contains('skills-section')) {
-            const skillBars = entry.target.querySelectorAll('.skill-progress');
-            skillBars.forEach((bar, index) => {
-              setTimeout(() => {
-                bar.style.width = bar.dataset.level + '%';
-              }, index * 200);
-            });
-          }
         }
       });
     }, observerOptions);
@@ -40,13 +40,20 @@ const About = () => {
     navigateWithTransition(path);
   };
 
+  const getGridColumns = () => {
+    if (windowWidth <= 768) return '1fr';
+    if (windowWidth <= 1024) return 'repeat(2, 1fr)';
+    return 'repeat(3, 1fr)';
+  };
+
   const skills = [
-    { name: 'Süreç İyileştirme', level: 90 },
-    { name: 'Proje Yönetimi', level: 85 },
-    { name: 'Veri Analizi', level: 80 },
-    { name: 'Yalın Üretim', level: 88 },
-    { name: 'React & JavaScript', level: 75 },
-    { name: 'Python', level: 70 }
+    { name: 'Süreç İyileştirme', icon: '⚙️' },
+    { name: 'Proje Yönetimi', icon: '📋' },
+    { name: 'Veri Analizi', icon: '📊' },
+    { name: 'Yalın Üretim', icon: '🏭' },
+    { name: 'React & JavaScript', icon: '⚛️' },
+    { name: '.NET', icon: '🔷' },
+    
   ];
 
   return (
@@ -54,23 +61,7 @@ const About = () => {
       <div className="container">
         <h2 className="section-title animate-on-scroll">Hakkımda</h2>
         
-        <div className="about-content">
-          <div className="about-image animate-on-scroll">
-            <img 
-              src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=500&h=600&fit=crop&auto=format&q=80" 
-              alt="Çalışma Alanı"
-              style={{
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'scale(1)';
-              }}
-            />
-          </div>
-          
+        <div className="about-content" style={{ display: 'block' }}>
           <div className="about-text animate-on-scroll">
             <h3 style={{ 
               fontSize: '1.8rem', 
@@ -89,12 +80,6 @@ const About = () => {
                 borderRadius: '2px'
               }}></span>
             </h3>
-            
-            <p style={{ marginBottom: '1.5rem', lineHeight: '1.7' }}>
-              🎯 2017 yılında Endüstri Mühendisliği lisans eğitimimi tamamladıktan sonra, aynı alanda 
-              yüksek lisans yaparak bilgi birikimimi derinleştirdim. Kariyerim boyunca süreç 
-              optimizasyonu, proje yönetimi ve operasyon araştırması alanlarında uzmanlaştım.
-            </p>
             
             <p style={{ marginBottom: '1.5rem', lineHeight: '1.7' }}>
               💡 Kompleks problemlere yenilikçi çözümler üretme konusunda tutkulu olup, verimlilik 
@@ -162,69 +147,55 @@ const About = () => {
                 fontSize: '1.5rem', 
                 marginBottom: '2rem', 
                 color: 'var(--primary-color)',
-                textAlign: 'center'
+                textAlign: 'left'
               }}>
                 💡 Uzmanlık Alanlarım
               </h4>
-              {skills.map((skill, index) => (
-                <div key={index} className="skill-item" style={{
-                  marginBottom: '1.5rem',
-                  background: 'var(--background-light)',
-                  padding: '1.2rem',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-color)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
-                >
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.8rem'
-                  }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: getGridColumns(),
+                gap: '1.5rem'
+              }}>
+                {skills.map((skill, index) => (
+                  <div key={index} className="skill-item" style={{
+                    background: 'var(--background-light)',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border-color)',
+                    transition: 'all 0.3s ease',
+                    textAlign: 'center',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-5px)';
+                    e.target.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
+                    e.target.style.borderColor = 'var(--secondary-color)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                    e.target.style.borderColor = 'var(--border-color)';
+                  }}
+                  >
+                    <div style={{ 
+                      fontSize: '2rem', 
+                      marginBottom: '1rem',
+                      filter: 'grayscale(0%)',
+                      transition: 'all 0.3s ease'
+                    }}>
+                      {skill.icon}
+                    </div>
                     <h3 style={{ 
                       fontSize: '1rem', 
                       color: 'var(--primary-color)',
-                      margin: 0
+                      margin: 0,
+                      fontWeight: '600'
                     }}>
                       {skill.name}
                     </h3>
-                    <span style={{ 
-                      color: 'var(--secondary-color)', 
-                      fontWeight: '700',
-                      fontSize: '0.9rem'
-                    }}>
-                      {skill.level}%
-                    </span>
                   </div>
-                  <div className="skill-progress" style={{
-                    height: '6px',
-                    background: 'var(--background-gray)',
-                    borderRadius: '3px',
-                    overflow: 'hidden'
-                  }}>
-                    <div
-                      className="skill-progress"
-                      data-level={skill.level}
-                      style={{
-                        height: '100%',
-                        width: '0%',
-                        background: `linear-gradient(90deg, var(--secondary-color), var(--primary-color))`,
-                        borderRadius: '3px',
-                        transition: 'width 1.5s ease-out'
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>

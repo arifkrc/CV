@@ -5,43 +5,12 @@ import { usePageNavigation, usePageInit } from '../hooks';
 const Home = () => {
   const navigateWithTransition = usePageNavigation();
   usePageInit(); // Scroll to top on page load
-  const [counters, setCounters] = useState({ years: 0, projects: 0, satisfaction: 0 });
   const [isVisible, setIsVisible] = useState(false);
 
-  // Counter animation effect
+  // Animation trigger
   useEffect(() => {
     setIsVisible(true);
-    const timer = setTimeout(() => {
-      animateCounters();
-    }, 500);
-    return () => clearTimeout(timer);
   }, []);
-
-  const animateCounters = () => {
-    const targets = { years: 5, projects: 15, satisfaction: 100 };
-    const duration = 2000;
-    const startTime = Date.now();
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function
-      const easeOut = 1 - Math.pow(1 - progress, 3);
-      
-      setCounters({
-        years: Math.floor(targets.years * easeOut),
-        projects: Math.floor(targets.projects * easeOut),
-        satisfaction: Math.floor(targets.satisfaction * easeOut)
-      });
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  };
   
   const handleNavigation = (path) => {
     navigateWithTransition(path);
@@ -60,7 +29,7 @@ const Home = () => {
                   opacity: 0
                 }}
               >
-                Merhaba,
+                Merhaba
               </span>
             
             </h1>
@@ -71,7 +40,7 @@ const Home = () => {
                 opacity: 0
               }}
             >
-              Endüstri Mühendisi & Yazılım Geliştirici
+              Problem Çözücü & İnovatör
             </p>
             <p 
               className={`description ${isVisible ? 'animate-fadeInUp' : ''}`} 
@@ -80,55 +49,13 @@ const Home = () => {
                 opacity: 0
               }}
             >
-              Modern teknolojiler kullanarak yaratıcı çözümler üreten, süreç optimizasyonu 
-              ve yazılım geliştirme konularında deneyimli bir mühendisim. Projelerim hem 
-              teknik hem de yaratıcı açıdan değer katmayı hedefler.
+              Endüstri mühendisliği bilgimi modern teknolojilerle harmanlayarak 
+              iş süreçlerini optimize ediyor ve yaratıcı çözümler üretiyorum. 
+              Analitik düşünce tarzım ile karmaşık problemleri basit, etkili 
+              çözümlere dönüştürüyorum.
             </p>
             
-            <div className={`stats-grid ${isVisible ? 'animate-fadeInUp' : ''}`} style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '1.5rem',
-              marginBottom: '2.5rem',
-              padding: '1.5rem 0',
-              animationDelay: '2.4s',
-              opacity: 0
-            }}>
-              <div style={{ textAlign: 'center' }} className="animate-pulse">
-                <div style={{ 
-                  fontSize: '2rem', 
-                  fontWeight: '700', 
-                  color: 'var(--secondary-color)' 
-                }}>{counters.years}+</div>
-                <div style={{ 
-                  fontSize: '0.9rem', 
-                  color: 'var(--text-light)' 
-                }}>Yıl Deneyim</div>
-              </div>
-              <div style={{ textAlign: 'center' }} className="animate-pulse delay-100">
-                <div style={{ 
-                  fontSize: '2rem', 
-                  fontWeight: '700', 
-                  color: 'var(--secondary-color)' 
-                }}>{counters.projects}+</div>
-                <div style={{ 
-                  fontSize: '0.9rem', 
-                  color: 'var(--text-light)' 
-                }}>Proje</div>
-              </div>
-              <div style={{ textAlign: 'center' }} className="animate-pulse delay-200">
-                <div style={{ 
-                  fontSize: '2rem', 
-                  fontWeight: '700', 
-                  color: 'var(--secondary-color)' 
-                }}>{counters.satisfaction}%</div>
-                <div style={{ 
-                  fontSize: '0.9rem', 
-                  color: 'var(--text-light)' 
-                }}>Memnuniyet</div>
-              </div>
-            </div>
-            <div className={`hero-buttons ${isVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: '2.4s', opacity: 0 }}>
+            <div className={`hero-buttons ${isVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: '2.8s', opacity: 0 }}>
               <div 
                 onClick={() => handleNavigation('/resume')}
                 style={{
@@ -165,15 +92,59 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <div className={`hero-image ${isVisible ? 'animate-fadeInRight' : ''}`} style={{ animationDelay: '1.5s', opacity: 0 }}>
-            <img 
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face&auto=format&q=80" 
-              alt="arifk.co" 
-              className="profile-image animate-float"
-              style={{
-                transition: 'all 0.3s ease',
-              }}
-            />
+          <div className={`hero-visual ${isVisible ? 'animate-fadeInRight' : ''}`} style={{ animationDelay: '1.5s', opacity: 0 }}>
+            <div className="visual-container">
+              {/* Central Focus Element */}
+              <div className="central-element">
+                <div className="pulse-ring"></div>
+                <div className="central-icon">
+                  <span className="icon-text">arifk.</span>
+                </div>
+              </div>
+              
+              {/* Individual Orbital Cards - Each card has its own unique orbit */}
+              <div className="individual-orbit orbit-1">
+                <div className="floating-card orbital-card tech-card-1">
+                  <div className="card-icon">💻</div>
+                  <div className="card-text">Kodlama</div>
+                </div>
+              </div>
+              
+              <div className="individual-orbit orbit-2">
+                <div className="floating-card orbital-card tech-card-2">
+                  <div className="card-icon">⚙️</div>
+                  <div className="card-text">Otomasyon</div>
+                </div>
+              </div>
+              
+              <div className="individual-orbit orbit-3">
+                <div className="floating-card orbital-card tech-card-3">
+                  <div className="card-icon">🔧</div>
+                  <div className="card-text">Geliştirme</div>
+                </div>
+              </div>
+              
+              <div className="individual-orbit orbit-4">
+                <div className="floating-card orbital-card card-1">
+                  <div className="card-icon">🎯</div>
+                  <div className="card-text">İnovasyon</div>
+                </div>
+              </div>
+              
+              <div className="individual-orbit orbit-5">
+                <div className="floating-card orbital-card card-2">
+                  <div className="card-icon">⚡</div>
+                  <div className="card-text">Verimlilik</div>
+                </div>
+              </div>
+              
+              <div className="individual-orbit orbit-6">
+                <div className="floating-card orbital-card card-3">
+                  <div className="card-icon">🚀</div>
+                  <div className="card-text">Gelişim</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
