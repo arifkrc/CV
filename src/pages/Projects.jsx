@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { CalendarDays, Image as ImageIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Projects = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -166,8 +167,8 @@ const Projects = () => {
                         <>
                           
                           <div style={{ marginTop: '0.6rem' }}>
-                            <a
-                              href="/utf"
+                            <Link
+                              to="/utf"
                               style={{
                                 background: 'var(--bg)',
                                 border: '2px solid var(--accent-color)',
@@ -183,7 +184,7 @@ const Projects = () => {
                               }}
                             >
                               Prototipi Gör
-                            </a>
+                            </Link>
                           </div>
                         </>
                       )}
