@@ -85,7 +85,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h4 style={{ color: 'var(--primary-color)', marginBottom: '0.2rem' }}>E-mail</h4>
-                  <p style={{ color: 'var(--text-light)', margin: 0 }}>hello@arifk.co</p>
+                  <p style={{ color: 'var(--text-light)', margin: 0 }}>krcarif6@gmail.com</p>
                 </div>
               </div>
               <div style={{ 
@@ -127,23 +127,8 @@ const Contact = () => {
                 boxShadow: '0 5px 15px rgba(0, 0, 0, 0.08)',
                 border: '1px solid var(--border-color)'
               }}>
-                <div style={{ 
-                  background: 'var(--secondary-color)', 
-                  padding: '14px', 
-                  borderRadius: '50%',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: '48px',
-                  minHeight: '48px'
-                }}>
-                  <MapPin size={24} />
-                </div>
-                <div>
-                  <h4 style={{ color: 'var(--primary-color)', marginBottom: '0.2rem' }}>Konum</h4>
-                  <p style={{ color: 'var(--text-light)', margin: 0 }}>İstanbul, Türkiye</p>
-                </div>
+                
+                
               </div>
             </div>
             {/* Sosyal Medya */}
@@ -159,7 +144,7 @@ const Contact = () => {
               </h4>
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <a 
-                  href="#" 
+                  href="https://www.linkedin.com/in/aarifkaracaa/" 
                   style={{ 
                     background: 'var(--secondary-color)',
                     color: 'white',
@@ -178,7 +163,7 @@ const Contact = () => {
                   <Linkedin size={24} />
                 </a>
                 <a 
-                  href="#" 
+                  href="https://github.com/arifkrc" 
                   style={{ 
                     background: 'var(--primary-color)',
                     color: 'white',
