@@ -360,7 +360,7 @@ const Utf = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '1.5rem' }}>
                   <div>
                      <label htmlFor="date" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Tarih</label>
-                     <input type="date" id="date" name="date" value={form.date} onChange={handleChange} required style={{
+                     <input type="date" id="date" name="date" value={form.date} onChange={handleChange} style={{
                        width: '100%',
                        padding: '12px 16px',
                        borderRadius: '8px',
@@ -434,7 +434,7 @@ const Utf = () => {
                   </div>
                   <div>
                     <label htmlFor="foreman" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Ustabaşı Adı</label>
-                    <select id="foreman" name="foreman" value={form.foreman} onChange={handleChange} required style={{
+                    <select id="foreman" name="foreman" value={form.foreman} onChange={handleChange} style={{
                       width: '100%',
                       padding: '12px 16px',
                       borderRadius: '8px',
@@ -451,7 +451,7 @@ const Utf = () => {
                   </div>
                   <div>
                     <label htmlFor="process" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Yapılan İşlem</label>
-                    <select id="process" name="process" value={form.process} onChange={handleChange} required style={{
+                    <select id="process" name="process" value={form.process} onChange={handleChange} style={{
                       width: '100%',
                       padding: '12px 16px',
                       borderRadius: '8px',
@@ -472,7 +472,7 @@ const Utf = () => {
                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
                   <div>
                        <label htmlFor="productCode" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Ürün Kodu</label>
-                       <input type="text" id="productCode" name="productCode" value={form.productCode} onChange={handleChange} required style={{
+                       <input type="text" id="productCode" name="productCode" value={form.productCode} onChange={handleChange} style={{
                          width: '100%',
                          padding: '12px 16px',
                          borderRadius: '8px',
@@ -486,7 +486,7 @@ const Utf = () => {
                   </div>
                   <div>
                        <label htmlFor="hatNo" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Hat No</label>
-                       <input type="text" id="hatNo" name="hatNo" value={form.hatNo} onChange={handleChange} required style={{
+                       <input type="text" id="hatNo" name="hatNo" value={form.hatNo} onChange={handleChange} style={{
                          width: '100%',
                          padding: '12px 16px',
                          borderRadius: '8px',
@@ -500,7 +500,7 @@ const Utf = () => {
                   </div>
                   <div>
                        <label htmlFor="quantity" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Üretim Adedi</label>
-                       <input type="number" id="quantity" name="quantity" value={form.quantity} onChange={handleChange} required min={0} style={{
+                       <input type="number" id="quantity" name="quantity" value={form.quantity} onChange={handleChange} min={0} style={{
                          width: '100%',
                          padding: '12px 16px',
                          borderRadius: '8px',
@@ -897,7 +897,7 @@ const Utf = () => {
               }}>
                 <div>
                   <label htmlFor="packDate" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Tarih</label>
-                  <input type="date" id="packDate" name="date" value={packForm.date} onChange={handlePackChange} required style={{
+                  <input type="date" id="packDate" name="date" value={packForm.date} onChange={handlePackChange} style={{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',
@@ -912,7 +912,7 @@ const Utf = () => {
                 </div>
                 <div>
                   <label htmlFor="packProductCode" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Ürün Kodu</label>
-                  <input type="text" id="packProductCode" name="productCode" value={packForm.productCode} onChange={handlePackChange} required style={{
+                  <input type="text" id="packProductCode" name="productCode" value={packForm.productCode} onChange={handlePackChange} style={{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',
@@ -927,7 +927,7 @@ const Utf = () => {
                 </div>
                 <div>
                   <label htmlFor="packQuantity" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Paketleme Adedi</label>
-                  <input type="number" id="packQuantity" name="quantity" value={packForm.quantity} onChange={handlePackChange} required min={0} style={{
+                  <input type="number" id="packQuantity" name="quantity" value={packForm.quantity} onChange={handlePackChange} min={0} style={{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',
@@ -1030,7 +1030,7 @@ const Utf = () => {
               }}>
                 <div>
                   <label htmlFor="fireDate" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Tarih</label>
-                  <input type="date" id="fireDate" name="date" value={fireForm.date} onChange={handleFireChange} required style={{
+                  <input type="date" id="fireDate" name="date" value={fireForm.date} onChange={handleFireChange} style={{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',
@@ -1045,7 +1045,7 @@ const Utf = () => {
                 </div>
                 <div>
                   <label htmlFor="fireProductCode" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Ürün Kodu</label>
-                  <input type="text" id="fireProductCode" name="productCode" value={fireForm.productCode} onChange={handleFireChange} required style={{
+                  <input type="text" id="fireProductCode" name="productCode" value={fireForm.productCode} onChange={handleFireChange} style={{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',
@@ -1060,7 +1060,7 @@ const Utf = () => {
                 </div>
                 <div>
                   <label htmlFor="fireQuantity" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Fire Adedi</label>
-                  <input type="number" id="fireQuantity" name="quantity" value={fireForm.quantity} onChange={handleFireChange} required min={0} style={{
+                  <input type="number" id="fireQuantity" name="quantity" value={fireForm.quantity} onChange={handleFireChange} min={0} style={{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',
@@ -1075,7 +1075,7 @@ const Utf = () => {
                 </div>
                 <div>
                   <label htmlFor="fireErrorType" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Hata Türü</label>
-                  <select id="fireErrorType" name="errorType" value={fireForm.errorType} onChange={handleFireChange} required style={{
+                  <select id="fireErrorType" name="errorType" value={fireForm.errorType} onChange={handleFireChange} style={{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',

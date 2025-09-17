@@ -3,17 +3,14 @@ import { AtSign, Smartphone, MapPin, SendHorizontal, Linkedin, Github } from 'lu
 import { useNavigate } from 'react-router-dom';
 
 const Contact = () => {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
     message: ''
   });
-  const isUtf = formData.message.trim().toUpperCase() === 'ÜTF';
 
   useEffect(() => {
-    // Scroll to top on page load/refresh
     window.scrollTo(0, 0);
   }, []);
 
@@ -26,14 +23,9 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Sadece mesaj alanı 'ÜTF' ise formu gönder ve yönlendir
-    if (formData.message.trim().toUpperCase() === 'ÜTF') {
-      window.sessionStorage.setItem('utfAccess', 'true');
-      navigate('/utf');
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    } else {
-      alert('Lütfen mesaj kısmına "ÜTF" yazınız.');
-    }
+    // Burada iletisim formu gönderme işlemi yapılabilir (örn. e-posta, API çağrısı)
+    alert('Mesajınız iletildi!');
+    setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
   return (
@@ -208,7 +200,7 @@ const Contact = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  required={!isUtf}
+                  required
                 />
               </div>
 
@@ -220,7 +212,7 @@ const Contact = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required={!isUtf}
+                  required
                 />
               </div>
 
@@ -232,7 +224,7 @@ const Contact = () => {
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
-                  required={!isUtf}
+                  required
                 />
               </div>
 
