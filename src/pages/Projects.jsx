@@ -37,7 +37,8 @@ const Projects = () => {
       category: 'layout',
       technologies: ['Python', 'Tabu Arama', 'Optimization', 'HTML report'],
       paragraphs: [
-        'Bu rapor, "sonne.py" dosyasında uygulanan Eşit Olmayan Alan Tesis Yerleşim Problemi (UA-FLP) çözüm algoritmasını analiz etmektedir. EnhancedUAFLP algoritması, farklı departman boyutları ve gerçek dünya kısıtlarını dikkate alarak yerleşimi optimize etmeyi amaçlar.',
+  'Bu proje, firmanın taşınma planına ve mevcut yerleşimin testine istinaden geliştirilmiştir.',
+  'Bu rapor, "sonne.py" dosyasında uygulanan Eşit Olmayan Alan Tesis Yerleşim Problemi (UA-FLP) çözüm algoritmasını analiz etmektedir. EnhancedUAFLP algoritması, farklı departman boyutları ve gerçek dünya kısıtlarını dikkate alarak yerleşimi optimize etmeyi amaçlar.',
         'Algoritma tabu arama meta-sezgisel yöntemi ile çalışır; başlangıç çözümü, çok amaçlı değerlendirme, tabu arama optimizasyonu ve yeniden başlatma stratejileri içerir. Rapor paketinde optimize edilmiş yerleşim planı görselleri, malzeme akış ağı görselleştirmeleri ve ilerleme grafikleri bulunmaktadır.',
         'Kullanım: optimize fonksiyonu çalıştırıldığında sonuçlar HTML ve JSON formatında kaydedilir; bu çıktılar görselleştirme ve daha ileri analizler için kullanılabilir.',
         'Not: Yakında bu projeyi websitesinde online olarak deneme ve deneyimleme imkanı sunacağım.'
