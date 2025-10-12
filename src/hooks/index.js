@@ -73,7 +73,7 @@ export const usePageInit = () => {
 
 // Mobile section scroll navigation
 export const useSectionScrollNav = (opts = {}) => {
-  const { thresholdPx = 120, cooldownMs = 900, routes = ['/', '/about', '/resume', '/projects', '/contact', '/utf'] } = opts;
+  const { thresholdPx = 120, cooldownMs = 900, routes = ['/', '/about', '/resume', '/projects', '/contact', '/utf'], enabled = true } = opts;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,8 +83,8 @@ export const useSectionScrollNav = (opts = {}) => {
     let lastNav = 0;
 
     const onScroll = () => {
-      // only active on mobile sized viewports
-      if (window.innerWidth > 768) return;
+  // only active on mobile sized viewports and when enabled
+  if (!enabled || window.innerWidth > 768) return;
 
       const now = Date.now();
       if (now - lastNav < cooldownMs) return;
@@ -122,5 +122,5 @@ export const useSectionScrollNav = (opts = {}) => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('touchend', onScroll);
     };
-  }, [thresholdPx, cooldownMs, navigate, routes]);
+  }, [thresholdPx, cooldownMs, navigate, routes, enabled]);
 };

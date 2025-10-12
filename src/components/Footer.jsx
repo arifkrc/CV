@@ -11,7 +11,7 @@ const Footer = () => (
     fontSize: '1.05rem',
     marginTop: '3rem'
   }}>
-    Bu websitesi geliştirilmeye devam etmektedir.
+    © {new Date().getFullYear()} arifk.co
   </footer>
 );
 

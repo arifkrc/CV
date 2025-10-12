@@ -23,7 +23,21 @@ const Header = () => {
   };
 
   const handleNavigation = (path) => {
-    // Smooth transition effect
+    // On small screens, scroll to section IDs instead of navigating routes
+    if (window.innerWidth <= 768) {
+      setIsMenuOpen(false);
+      const id = path === '/' ? 'home' : path.replace(/^\//, '');
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        // fallback to route navigation if section not present
+        navigate(path);
+      }
+      return;
+    }
+
+    // Desktop: keep route transition behavior
     document.body.style.opacity = '0.95';
     document.body.style.transition = 'opacity 0.2s ease';
     

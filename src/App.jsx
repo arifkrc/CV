@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -23,6 +23,13 @@ function PageTransition({ children }) {
 
 function App() {
   const scrollProgress = useScrollProgress();
+  const [isMobileSinglePage, setIsMobileSinglePage] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+
+  useEffect(() => {
+    const onResize = () => setIsMobileSinglePage(window.innerWidth <= 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const handleProgressBarClick = (e) => {
     const progressBar = e.currentTarget;
@@ -60,14 +67,25 @@ function App() {
         
         <Header />
         <main>
-          <Routes>
-            <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-            <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-            <Route path="/resume" element={<PageTransition><Resume /></PageTransition>} />
-            <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
-            <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
-            <Route path="/utf" element={<PageTransition><Utf /></PageTransition>} />
-          </Routes>
+          {isMobileSinglePage ? (
+            <div className="mobile-singlepage" role="main">
+              <section id="home" className="mobile-section"><Home /></section>
+              <section id="about" className="mobile-section"><About /></section>
+              <section id="resume" className="mobile-section"><Resume /></section>
+              <section id="projects" className="mobile-section"><Projects /></section>
+              <section id="contact" className="mobile-section"><Contact /></section>
+              <section id="utf" className="mobile-section"><Utf /></section>
+            </div>
+          ) : (
+            <Routes>
+              <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+              <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+              <Route path="/resume" element={<PageTransition><Resume /></PageTransition>} />
+              <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
+              <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+              <Route path="/utf" element={<PageTransition><Utf /></PageTransition>} />
+            </Routes>
+          )}
         </main>
         <Footer />
       </div>

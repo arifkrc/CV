@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CalendarDays, MapPin, Building2, GraduationCap, Award, Smartphone, Download } from 'lucide-react';
+import { CalendarDays, MapPin, Building2, GraduationCap, Award, Smartphone, Download, ChevronDown } from 'lucide-react';
 
 const Resume = () => {
-  const [selectedExperience, setSelectedExperience] = useState(null);
+  const [selectedExperienceId, setSelectedExperienceId] = useState(null);
   const [visibleItems, setVisibleItems] = useState(new Set());
   const observerRef = useRef(null);
 
@@ -64,65 +64,85 @@ const Resume = () => {
     };
   }, []);
 
-  const handleExperienceClick = (index) => {
-    setSelectedExperience(selectedExperience === index ? null : index);
+  const handleExperienceClick = (id) => {
+    setSelectedExperienceId(prev => (prev === id ? null : id));
   };
 
   const experiences = [
-    
     {
-      id: 't03',
-      title: "Endüstri Mühendisi",
-      company: "XYZ Corporation",
-      period: "2019 - 2021",
-      location: "Ankara",
+      id: 'tt',
+      title: 'BT Departmanı',
+      company: 'Türk Telekom Genel Müdürlüğü\n(Stajyer)',
+      period: '07-2019',
+      location: 'Ankara',
       description: [
-        "Operasyonel süreçleri analiz ettim ve iyileştirdim",
-        "Risk analizleri gerçekleştirdim",
-        "Üretim planlaması ve envanter yönetimi",
-        "ERP sistemlerinin implementasyonunda rol aldım"
+        'Kurumsal BT operasyonlarına destek sağladım',
+        'Sistem izleme, olay yönetimi ve temel altyapı desteği',
+        'Dokümantasyon ve prosedür güncellemelerine katkı sağladım'
       ]
     },
     {
-      id: 't09',
-      title: "Yazılım Geliştirici",
-      company: "Tech Solutions Ltd.",
-      period: "2018 - 2019",
-      location: "İstanbul",
+      id: 'nc',
+      title: 'Metot Birimi',
+      company: 'NITROCARE\n(Stajyer)',
+      period: '07-2024',
+      location: 'Sivas',
       description: [
-        "React ve Node.js ile web uygulamaları geliştirdim",
-        "RESTful API tasarımı ve implementasyonu",
-        "Agile metodolojiler ile proje yönetimi",
-        "Code review ve mentoring süreçlerinde aktif rol aldım"
+        'Üretim metotları ve iş talimatları üzerinde çalıştım',
+        'Verimlilik iyileştirme ve proses standardizasyonu görevleri yürüttüm',
+        'Saha verilerini toplayıp analiz ederek öneriler sundum'
       ]
     },
     {
-      id: 't13',
-      title: "Stajyer Mühendis",
-      company: "Endüstri Firması A.Ş.",
-      period: "2017 - 2018",
-      location: "Bursa",
+      id: 'bg',
+      title: 'Teknik Ekip\n(Stajyer)',
+      company: 'BG Grup',
+      period: '08-2024',
+      location: 'Sivas',
       description: [
-        "Üretim hatlarında veri toplama ve analiz",
-        "Kalite kontrol prosedürlerini öğrendim",
-        "AutoCAD ile teknik çizimler hazırladım",
-        "İş güvenliği eğitimleri aldım"
+        'Birimler arası ilişkileri inceledim',
+        'Firmadaki iş akış sürecine uygun teknolojileri araştırdım'
+        
       ]
     },
     {
-      id: 't16',
-      title: "Part-time Yazılım Geliştirici",
-      company: "Startup Teknoloji",
-      period: "2016 - 2017",
-      location: "İstanbul",
+      id: 'ak',
+      title: 'Planlama Birimi',
+      company: 'Akış Asansör (FRENBU)',
+      period: '07-2025',
+      location: 'Konya',
       description: [
-        "Mobile uygulama geliştirme projelerinde yer aldım",
-        "JavaScript ve Python ile küçük projeler geliştirdim",
-        "Veritabanı tasarımı ve optimizasyonu",
-        "Müşteri geri bildirimlerini analiz ettim"
+        'Süreç akışlarının takibi ve veri toplama faaliyetlerinde görev aldım',
+        'Proje ve iş planlama dokümantasyonuna katkı sağladım',
+        'Sahanın CANIAS ERP üzerinden senkronize bir şekilde yürütülmesi üzerine çalıştım'
       ]
     }
   ];
+
+  // Helper: parse period string 'MM-YYYY' to Date for sorting
+  const parsePeriod = (period) => {
+    if (!period || typeof period !== 'string') return new Date(0);
+    const parts = period.split('-');
+    if (parts.length !== 2) return new Date(0);
+    const month = parseInt(parts[0], 10) - 1; // zero-based
+    const year = parseInt(parts[1], 10);
+    if (Number.isNaN(month) || Number.isNaN(year)) return new Date(0);
+    return new Date(year, month, 1);
+  };
+
+  // Render experiences sorted by most recent period first
+  const sortedExperiences = [...experiences].sort((a, b) => parsePeriod(b.period) - parsePeriod(a.period));
+
+  // If observer hasn't detected items (for example on initial mobile singlepage render),
+  // make experience items visible by default so cards aren't hidden.
+  useEffect(() => {
+    setVisibleItems(prev => {
+      if (prev && prev.size > 0) return prev;
+      const initial = new Set(sortedExperiences.map((_, i) => `exp-${i}`));
+      return initial;
+    });
+    // only run when the sortedExperiences list changes
+  }, [sortedExperiences]);
 
   const education = [
     
@@ -140,22 +160,79 @@ const Resume = () => {
     }
   ];
 
+  // Small helper component to render details (keeps JSX simpler)
+  const ExperienceDetails = ({ items }) => (
+    <div className={`experience-details expanded animate-expand`} role="region" aria-hidden={false} style={{
+      backgroundColor: 'var(--bg-light)',
+      borderRadius: '8px',
+      marginTop: '1rem',
+      border: '1px solid var(--border-light)'
+    }}>
+      <h5 style={{
+        color: 'var(--primary-color)',
+        marginBottom: '0.75rem',
+        fontSize: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}>
+        <Award size={16} />
+        Sorumluluklar:
+      </h5>
+      <ul style={{ margin: 0, paddingLeft: '1.5rem', color: 'var(--text-color)' }}>
+        {items.map((item, i) => (
+          <li key={i} style={{ marginBottom: '0.5rem', lineHeight: '1.4' }}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  // Small card component for a single experience
+  const ExperienceCard = ({ exp, isExpanded, onToggle, index }) => (
+    <div
+      key={exp.id}
+      className={`skill-item ${visibleItems.has(`exp-${index}`) ? 'animate-slide-up' : ''} ${isExpanded ? 'expanded' : ''}`}
+      style={{
+        opacity: visibleItems.has(`exp-${index}`) ? 1 : 0,
+        transform: `${visibleItems.has(`exp-${index}`) ? 'translateY(0)' : 'translateY(30px)'} ${isExpanded ? 'scale(1.02)' : 'scale(1)'}`,
+        transition: `all 0.6s ease ${index * 0.2}s`,
+        cursor: 'pointer',
+        border: isExpanded ? '2px solid var(--secondary-color)' : '1px solid var(--border-light)'
+      }}
+      onClick={() => onToggle(exp.id)}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+        <Building2 size={20} color="var(--secondary-color)" />
+        <h4 style={{ color: 'var(--primary-color)', margin: 0, fontSize: '1.2rem' }}>{exp.title}</h4>
+        <div style={{ marginLeft: 'auto' }}>
+          <ChevronDown className="chevron" size={18} />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <p style={{ color: 'var(--secondary-color)', fontWeight: '600', marginBottom: '0.5rem', fontSize: '1.1rem' }}>{exp.company}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <MapPin size={14} color="var(--text-light)" />
+            <span style={{ color: 'var(--text-light)', fontSize: '0.9rem' }}>{exp.location}</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <CalendarDays size={14} color="var(--text-light)" />
+            <span style={{ color: 'var(--primary-color)', fontWeight: '500', backgroundColor: 'var(--bg-light)', padding: '4px 8px', borderRadius: '12px', fontSize: '0.85rem' }}>{exp.period}</span>
+          </div>
+        </div>
+      </div>
+
+      {isExpanded && <ExperienceDetails items={exp.description} />}
+    </div>
+  );
+
   return (
     <div className="section">
       <div className="container">
         <h2 className="section-title">Özgeçmiş</h2>
-        <div style={{
-          background: 'var(--bg-light)',
-          color: 'var(--text-light)',
-          border: '1px solid var(--border-light)',
-          borderRadius: '8px',
-          padding: '1rem 1.5rem',
-          marginBottom: '2rem',
-          fontSize: '1.05rem',
-          maxWidth: '600px'
-        }}>
-          <strong>Not:</strong> Bu sayfadaki özgeçmiş verileri gerçeği kısmen yansıtmaktadır ve sayfa geliştirilmeye devam edilmektedir.
-        </div>
+        {/* Note removed per user request */}
         
         {/* İş Deneyimleri */}
         <div style={{ marginBottom: '4rem' }}>
@@ -169,102 +246,18 @@ const Resume = () => {
             textAlign: 'left'
           }}>
             <Building2 size={24} />
-            İş Deneyimlerim
+            Deneyimlerim
           </h3>
           
           <div className="skills-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
-            {experiences.map((exp, index) => (
-              <div 
-                key={index}
-                className={`skill-item ${
-                  visibleItems.has(`exp-${index}`) ? 'animate-slide-up' : ''
-                }`}
-                style={{
-                  opacity: visibleItems.has(`exp-${index}`) ? 1 : 0,
-                  transform: `${visibleItems.has(`exp-${index}`) ? 'translateY(0)' : 'translateY(30px)'} ${selectedExperience === index ? 'scale(1.02)' : 'scale(1)'}`,
-                  transition: `all 0.6s ease ${index * 0.2}s`,
-                  cursor: 'pointer',
-                  border: selectedExperience === index ? '2px solid var(--secondary-color)' : '1px solid var(--border-light)'
-                }}
-                onClick={() => handleExperienceClick(index)}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <Building2 size={20} color="var(--secondary-color)" />
-                  <h4 style={{ color: 'var(--primary-color)', margin: 0, fontSize: '1.2rem' }}>
-                    {exp.title}
-                  </h4>
-                </div>
-                
-                <div style={{ marginBottom: '1rem' }}>
-                  <p style={{ 
-                    color: 'var(--secondary-color)', 
-                    fontWeight: '600', 
-                    marginBottom: '0.5rem',
-                    fontSize: '1.1rem'
-                  }}>
-                    {exp.company}
-                  </p>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <MapPin size={14} color="var(--text-light)" />
-                      <span style={{ color: 'var(--text-light)', fontSize: '0.9rem' }}>
-                        {exp.location}
-                      </span>
-                    </div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <CalendarDays size={14} color="var(--text-light)" />
-                      <span style={{ 
-                        color: 'var(--primary-color)', 
-                        fontWeight: '500',
-                        backgroundColor: 'var(--bg-light)',
-                        padding: '4px 8px',
-                        borderRadius: '12px',
-                        fontSize: '0.85rem'
-                      }}>
-                        {exp.period}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {selectedExperience === index && (
-                  <div style={{
-                    backgroundColor: 'var(--bg-light)',
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    marginTop: '1rem',
-                    border: '1px solid var(--border-light)'
-                  }}>
-                    <h5 style={{ 
-                      color: 'var(--primary-color)', 
-                      marginBottom: '0.75rem',
-                      fontSize: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}>
-                      <Award size={16} />
-                      Sorumluluklar & Başarılar:
-                    </h5>
-                    <ul style={{ 
-                      margin: 0, 
-                      paddingLeft: '1.5rem',
-                      color: 'var(--text-color)'
-                    }}>
-                      {exp.description.map((item, i) => (
-                        <li key={i} style={{ 
-                          marginBottom: '0.5rem',
-                          lineHeight: '1.4'
-                        }}>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+            {sortedExperiences.map((exp, index) => (
+              <ExperienceCard
+                key={exp.id}
+                exp={exp}
+                index={index}
+                isExpanded={selectedExperienceId === exp.id}
+                onToggle={handleExperienceClick}
+              />
             ))}
           </div>
         </div>

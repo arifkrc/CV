@@ -267,6 +267,23 @@ main {
   flex: 1;
 }
 
+/* Mobile single-page stacked layout */
+.mobile-singlepage {
+  scroll-snap-type: y mandatory;
+}
+
+.mobile-section {
+  min-height: calc(100vh - 70px); /* account for header */
+  scroll-snap-align: start;
+  padding-top: 80px; /* ensure content isn't hidden under fixed header */
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .mobile-section { min-height: calc(100vh - 60px); padding-top: 72px; }
+}
+
+
 /* ==================== */
 /* HERO SECTION         */
 /* ==================== */
@@ -1167,8 +1184,35 @@ a {
 .skill-item p {
   margin: 0.25rem 0 0 0;
   font-size: 0.85rem;
-  color: var(--text-light);
 }
+.skill-item .chevron {
+  /* slower, smoother rotation for clearer affordance */
+  transition: transform 0.65s cubic-bezier(.2,.9,.2,1);
+}
+
+.skill-item.expanded .chevron {
+  transform: rotate(180deg);
+}
+
+.experience-details {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-8px);
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  /* much slower max-height + fade + slide + padding for a visibly slower open */
+  transition: max-height 0.9s cubic-bezier(.2,.9,.2,1), opacity 0.6s ease 0.05s, transform 0.6s ease, padding 0.6s ease;
+}
+
+.experience-details.expanded {
+  max-height: 1200px; /* big enough for content */
+  opacity: 1;
+  transform: translateY(0);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
 
 /* Improve grid behavior on larger screens: center the grid and limit width */
 .skills-grid {
