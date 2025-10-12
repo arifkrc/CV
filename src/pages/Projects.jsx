@@ -53,7 +53,7 @@ const Projects = () => {
   // This keeps them as assets and avoids bundler parse issues.
   const imagesMap = useMemo(() => {
     // Relative to project root; Vite will include these as assets
-    const modules = import.meta.glob('/projects/uretimtakipotomasyonu/clientUI/*.{png,jpg,jpeg}', { eager: true, as: 'url' });
+  const modules = import.meta.glob('/src/projects/uretimtakipotomasyonu/clientUI/*.{png,jpg,jpeg}', { eager: true, as: 'url' });
     // modules is an object { './path': 'url' }
     return Object.values(modules || {});
   }, []);

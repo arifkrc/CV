@@ -23,8 +23,22 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Burada iletisim formu gönderme işlemi yapılabilir (örn. e-posta, API çağrısı)
-    alert('Mesajınız iletildi!');
+    // Open the user's mail client with prefilled subject and body as a fallback
+    const recipient = 'aarifkaracaa@gmail.com';
+    const subject = encodeURIComponent(formData.subject || 'Mesaj - Web Site');
+    const bodyLines = [
+      `Gönderen: ${formData.name || 'Anonim'}`,
+      `E-posta: ${formData.email || ''}`,
+      '\n',
+      formData.message || ''
+    ];
+    const body = encodeURIComponent(bodyLines.join('\n'));
+    const mailto = `mailto:${recipient}?subject=${subject}&body=${body}`;
+
+    // Try to open mail client
+    window.location.href = mailto;
+
+    // Clear the form
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
@@ -50,7 +64,7 @@ const Contact = () => {
             }}>
               💬 İletişim Bilgileri
             </h3>
-            <div style={{ marginBottom: '2rem' }}>
+              <div style={{ marginBottom: '2rem' }}>
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -77,50 +91,8 @@ const Contact = () => {
                 </div>
                 <div>
                   <h4 style={{ color: 'var(--primary-color)', marginBottom: '0.2rem' }}>E-mail</h4>
-                  <p style={{ color: 'var(--text-light)', margin: 0 }}>krcarif6@gmail.com</p>
+                  <p style={{ color: 'var(--text-light)', margin: 0 }}>aarifkaracaa@gmail.com</p>
                 </div>
-              </div>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '1rem',
-                marginBottom: '1rem',
-                padding: '1rem',
-                background: 'var(--background-light)',
-                borderRadius: '10px',
-                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.08)',
-                border: '1px solid var(--border-color)'
-              }}>
-                <div style={{ 
-                  background: 'var(--secondary-color)', 
-                  padding: '14px', 
-                  borderRadius: '50%',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: '48px',
-                  minHeight: '48px'
-                }}>
-                  <Smartphone size={24} />
-                </div>
-                <div>
-                  <h4 style={{ color: 'var(--primary-color)', marginBottom: '0.2rem' }}>Telefon</h4>
-                  <p style={{ color: 'var(--text-light)', margin: 0 }}>+90 555 123 45 67</p>
-                </div>
-              </div>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '1rem',
-                padding: '1rem',
-                background: 'var(--background-light)',
-                borderRadius: '10px',
-                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.08)',
-                border: '1px solid var(--border-color)'
-              }}>
-                
-                
               </div>
             </div>
             {/* Sosyal Medya */}
@@ -135,45 +107,22 @@ const Contact = () => {
                 🔗 Sosyal Medya
               </h4>
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <a 
-                  href="https://www.linkedin.com/in/aarifkaracaa/" 
-                  style={{ 
-                    background: 'var(--secondary-color)',
-                    color: 'white',
-                    padding: '16px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'transform 0.3s ease',
-                    minWidth: '52px',
-                    minHeight: '52px'
-                  }}
-                  onMouseOver={(e) => e.target.style.transform = 'scale(1.1)'}
-                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                <a
+                  href="https://www.linkedin.com/in/aarifkaracaa/"
+                  className="social-btn linkedin"
+                  aria-label="LinkedIn"
                 >
                   <Linkedin size={24} />
                 </a>
-                <a 
-                  href="https://github.com/arifkrc" 
-                  style={{ 
-                    background: 'var(--primary-color)',
-                    color: 'white',
-                    padding: '16px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'transform 0.3s ease',
-                    minWidth: '52px',
-                    minHeight: '52px'
-                  }}
-                  onMouseOver={(e) => e.target.style.transform = 'scale(1.1)'}
-                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                <a
+                  href="https://github.com/arifkrc"
+                  className="social-btn github"
+                  aria-label="GitHub"
                 >
                   <Github size={24} />
                 </a>
               </div>
+              
             </div>
           </div>
           {/* Form Bölümü */}

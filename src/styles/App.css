@@ -56,6 +56,43 @@
   box-shadow: 0 2px 10px rgba(59, 130, 246, 0.5);
 }
 
+/* Social buttons used on Contact page */
+.social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  text-decoration: none;
+  color: white;
+}
+
+.social-btn:focus {
+  outline: 3px solid rgba(59,130,246,0.18);
+  outline-offset: 3px;
+}
+
+.social-btn.linkedin {
+  background: var(--secondary-color);
+}
+
+.social-btn.github {
+  background: var(--primary-color);
+}
+
+.social-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.dark-theme .social-btn.github {
+  /* ensure GitHub button contrasts in dark mode */
+  background: var(--secondary-color);
+  color: var(--background-light);
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .scroll-progress-container {
@@ -886,6 +923,77 @@ main {
   }
 }
 
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .visual-container,
+  .individual-orbit,
+  .orbit-1,
+  .orbit-2,
+  .orbit-3,
+  .orbit-4,
+  .orbit-5,
+  .orbit-6,
+  .orbit-1 .tech-card-1,
+  .orbit-2 .tech-card-2,
+  .orbit-3 .tech-card-3,
+  .orbit-4 .card-1,
+  .orbit-5 .card-2,
+  .orbit-6 .card-3,
+  .central-icon,
+  .floating-card {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Mobile performance: simplify orbital visuals to reduce repaint/compute cost */
+@media (max-width: 768px) {
+  /* Stop the complex 3D orbit rotations entirely */
+  .visual-container,
+  .individual-orbit,
+  .orbit-1,
+  .orbit-2,
+  .orbit-3,
+  .orbit-4,
+  .orbit-5,
+  .orbit-6,
+  .orbit-1 .tech-card-1,
+  .orbit-2 .tech-card-2,
+  .orbit-3 .tech-card-3,
+  .orbit-4 .card-1,
+  .orbit-5 .card-2,
+  .orbit-6 .card-3 {
+    animation: none !important;
+    will-change: auto !important;
+    transform: none !important;
+  }
+
+  /* Hide the individual orbit elements and show only the central element */
+  .individual-orbit { display: none !important; }
+
+  /* Keep a lightweight float on the central icon only */
+  .central-icon {
+    animation: gentle-float 3.5s ease-in-out infinite;
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Reduce heavy visual effects that trigger repaints */
+  .floating-card,
+  .visual-container,
+  .hero::before {
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Reduce the number/complexity of transforms on hover to avoid jank */
+  .floating-card:hover,
+  .skill-item:hover {
+    transform: none !important;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.06) !important;
+  }
+}
+
 /* Tablet Responsive for About Skills Grid */
 @media (max-width: 1024px) and (min-width: 769px) {
   .skills-section div[style*="grid-template-columns"] {
@@ -976,20 +1084,46 @@ a {
 
 .skills-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
   margin-top: 2rem;
+  justify-items: center; /* center each grid cell */
+  align-items: start;
+}
+
+/* Ensure the section heading inside .skills-grid spans full width and is centered */
+.skills-grid > h4 {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+/* Make the skills container flexible and center its contents */
+.skills-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center heading and grid */
 }
 
 .skill-item {
   background: var(--background-light);
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   border: 1px solid var(--border-color);
   position: relative;
   overflow: hidden;
+  /* conventional card sizing */
+  width: clamp(180px, 22vw, 260px);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.4rem;
 }
 
 .skill-item::before {
@@ -1014,8 +1148,8 @@ a {
 }
 
 .skill-item:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
   border-color: var(--secondary-color);
 }
 
@@ -1025,7 +1159,30 @@ a {
 
 .skill-item h3 {
   color: var(--primary-color);
-  margin-bottom: 1rem;
+  margin: 0.35rem 0 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.skill-item p {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+/* Improve grid behavior on larger screens: center the grid and limit width */
+.skills-grid {
+  justify-items: center;
+  align-items: start;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 980px; /* comfortable centered width */
+}
+
+/* Make sure heading inside skills section stays above cards */
+.skills-section .section-title,
+.skills-section > h4 {
+  text-align: center;
 }
 
 .skill-progress {
@@ -1406,4 +1563,28 @@ a {
     font-size: 1rem;
     font-weight: 600;
   }
+}
+
+/* Ensure SVG icons (lucide/react) inherit text color for stroke and don't force fill */
+.icon-svg, svg {
+  color: inherit;
+  stroke: currentColor !important;
+  /* Do not force `fill` globally — many icons intentionally use `fill="none"` */
+}
+
+/* Preserve explicit fill="none" on icons so stroke-only icons remain unfilled */
+svg[fill="none"], svg[fill='none'] {
+  fill: none !important;
+}
+
+/* Social buttons: make sure GitHub button uses secondary color in dark theme for contrast */
+.section a[href*="github.com"] {
+  /* default styles are inline; provide theme-aware fallback */
+  background: var(--primary-color);
+  color: white;
+}
+
+.dark-theme .section a[href*="github.com"] {
+  background: var(--secondary-color);
+  color: var(--background-light);
 }

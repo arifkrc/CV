@@ -8,7 +8,7 @@ import Resume from './pages/Resume';
 import Projects from './pages/Projects';
 import Contact from './pages/Contact';
 import Utf from './pages/Utf';
-import { useScrollProgress } from './hooks';
+import { useScrollProgress, useSectionScrollNav } from './hooks';
 import './styles/App.css';
 
 function PageTransition({ children }) {
@@ -42,6 +42,8 @@ function App() {
 
   return (
     <Router>
+      {/* Router-scoped effects: run hooks that require react-router context here */}
+      <RouteEffects />
       <div className="App">
         {/* Scroll Progress Bar */}
         <div 
@@ -71,6 +73,12 @@ function App() {
       </div>
     </Router>
   );
+}
+
+function RouteEffects() {
+  // this component is rendered inside Router so useNavigate can be used safely
+  useSectionScrollNav({ routes: ['/', '/about', '/resume', '/projects', '/contact', '/utf'] });
+  return null;
 }
 
 export default App;
