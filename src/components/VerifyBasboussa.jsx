@@ -8,11 +8,21 @@ function VerifyBasboussa() {
   const location = useLocation();
   const isMobile = window.innerWidth <= 768;
 
+  const hideVerifySection = () => {
+    if (isMobile) {
+      const verifySection = document.getElementById('basboussaverify');
+      if (verifySection) {
+        verifySection.style.display = 'none';
+      }
+    }
+  };
+
   const handleRealBasboussaVerification = () => {
     if (step === 1) {
       setStep(2);
     } else if (step === 2 && answer.toLowerCase().trim() === 'balik') {
       sessionStorage.setItem('basboussaVerified', 'true');
+      hideVerifySection();
       if (isMobile) {
         const basboussaSection = document.getElementById('basboussa');
         if (basboussaSection) {
@@ -23,6 +33,7 @@ function VerifyBasboussa() {
       }
     } else {
       sessionStorage.removeItem('basboussaVerified');
+      hideVerifySection();
       if (isMobile) {
         const homeSection = document.getElementById('home');
         if (homeSection) {
@@ -31,6 +42,8 @@ function VerifyBasboussa() {
       } else {
         navigate('/');
       }
+      setStep(1); // Reset to first step
+      setAnswer(''); // Clear the answer
     }
   };
 
