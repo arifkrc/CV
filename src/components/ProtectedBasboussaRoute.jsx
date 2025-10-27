@@ -12,8 +12,9 @@ const ProtectedBasboussaRoute = ({ children }) => {
     if (isMobile) {
       return <VerifyBasboussa />;
     }
-    // For desktop view, redirect to verification page
-    return <Navigate to="/basboussa/verify" replace />;
+    // For desktop view, redirect to appropriate verification page
+    const verifyPath = location.pathname === '/threejs' ? '/threejs/verify' : '/basboussa/verify';
+    return <Navigate to={verifyPath} replace state={{ from: location.pathname }} />;
   }
 
   return children;

@@ -541,8 +541,7 @@ const ThreeJS = () => {
   const [isVerified, setIsVerified] = useState(false);
   
   useEffect(() => {
-    const verified = sessionStorage.getItem('basboussaVerified');
-    if (verified === 'true') {
+    if (sessionStorage.getItem('basboussaVerified') === 'true') {
       setIsVerified(true);
     }
     // Add classes to both body and container

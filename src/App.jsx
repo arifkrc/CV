@@ -78,33 +78,38 @@ function App() {
           height: isSpecialPath ? '100vh' : 'auto',
           overflow: isSpecialPath ? 'hidden' : 'visible'
         }}>
-          {/* Always use Routes for Basboussa */}
           <Routes>
+            {/* Protected Routes */}
+            <Route path="/threejs/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
+            <Route path="/threejs" element={<PageTransition><ProtectedBasboussaRoute><ThreeJS /></ProtectedBasboussaRoute></PageTransition>} />
             <Route path="/basboussa/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
-            <Route 
-              path="/basboussa" 
-              element={
+            <Route path="/basboussa" element={<PageTransition><ProtectedBasboussaRoute><ThreeJS /></ProtectedBasboussaRoute></PageTransition>} />
+            
+            {/* Regular Routes */}
+            {isMobileSinglePage ? (
+              <Route path="*" element={
                 <PageTransition>
-                  <ProtectedBasboussaRoute>
-                    <ThreeJS />
-                  </ProtectedBasboussaRoute>
+                  <div className="mobile-singlepage" role="main">
+                    <section id="home" className="mobile-section"><Home /></section>
+                    <section id="about" className="mobile-section"><About /></section>
+                    <section id="resume" className="mobile-section"><Resume /></section>
+                    <section id="projects" className="mobile-section"><Projects /></section>
+                    <section id="contact" className="mobile-section"><Contact /></section>
+                    <section id="utf" className="mobile-section"><Utf /></section>
+                  </div>
                 </PageTransition>
-              } 
-            />
-            <Route 
-              path="/threejs" 
-              element={
-                <PageTransition>
-                  <ProtectedBasboussaRoute>
-                    <ThreeJS />
-                  </ProtectedBasboussaRoute>
-                </PageTransition>
-              } 
-            />
+              } />
+            ) : (
+              <>
+                <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+                <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+                <Route path="/resume" element={<PageTransition><Resume /></PageTransition>} />
+                <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
+                <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+                <Route path="/utf" element={<PageTransition><Utf /></PageTransition>} />
+              </>
+            )}
           </Routes>
-
-          {/* Other content can still use mobile/desktop split */}
-          {isMobileSinglePage && location.pathname !== '/threejs' ? (
             <div className="mobile-singlepage" role="main">
               <section id="home" className="mobile-section"><Home /></section>
               <section id="about" className="mobile-section"><About /></section>
