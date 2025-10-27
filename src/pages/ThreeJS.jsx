@@ -2,6 +2,8 @@
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Html, Text, OrbitControls, Float } from '@react-three/drei';
 import { usePageInit } from '../hooks';
+import { useNavigate } from 'react-router-dom';
+import VerifyBasboussa from '../components/VerifyBasboussa';
 import * as THREE from 'three';
 import '../styles/ThreeJS.css';
 
@@ -533,10 +535,18 @@ function LoadingScreen() {
 // Main Component
 const ThreeJS = () => {
   usePageInit();
+  const navigate = useNavigate();
   const [conversationProgress, setConversationProgress] = useState(0);
   const [showFinalMessage, setShowFinalMessage] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   
   useEffect(() => {
+    const verified = sessionStorage.getItem('basboussaVerified');
+    if (!verified) {
+      navigate('/');
+    } else {
+      setIsVerified(true);
+    }
     // Add classes to both body and container
     document.body.classList.add('threejs-active');
     
@@ -547,7 +557,7 @@ const ThreeJS = () => {
       document.body.classList.remove('threejs-active');
       document.body.style.overflow = '';
     };
-  }, []);
+  }, [navigate]);
   
   const handleComplete = () => {
     setConversationProgress(100);
@@ -558,6 +568,10 @@ const ThreeJS = () => {
     setConversationProgress(progress);
   };
 
+  if (!isVerified) {
+    return <VerifyBasboussa />;
+  }
+  
   return (
     <div style={{ 
       width: '100%',
