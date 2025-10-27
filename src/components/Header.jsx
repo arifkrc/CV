@@ -23,28 +23,27 @@ const Header = () => {
   };
 
   const handleNavigation = (path) => {
-    // Always check verification for basboussa route
+    // Always close the mobile menu first
+    setIsMenuOpen(false);
+
+    // Special handling for Basboussa route
     if (path === '/basboussa') {
+      // Always check verification first
       if (sessionStorage.getItem('basboussaVerified') !== 'true') {
-        // Always navigate to verify page, regardless of device
+        // Navigate to verify page on all devices
         navigate('/basboussa/verify');
-        setIsMenuOpen(false);
         return;
       }
     }
 
-    // On small screens, scroll to section IDs instead of navigating routes
-    if (window.innerWidth <= 768) {
-      setIsMenuOpen(false);
+    // Handle regular navigation - but skip Basboussa as it's handled above
+    if (path !== '/basboussa' && window.innerWidth <= 768) {
       const id = path === '/' ? 'home' : path.replace(/^\//, '');
       const el = document.getElementById(id);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        // fallback to route navigation if section not present
-        navigate(path);
+        return;
       }
-      return;
     }
 
     // Desktop: keep route transition behavior

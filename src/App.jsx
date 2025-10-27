@@ -70,13 +70,28 @@ function App() {
         
         <Header />
         <main>
+          {/* Always use Routes for Basboussa */}
+          <Routes>
+            <Route path="/basboussa/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
+            <Route 
+              path="/basboussa" 
+              element={
+                <PageTransition>
+                  <ProtectedBasboussaRoute>
+                    <ThreeJS />
+                  </ProtectedBasboussaRoute>
+                </PageTransition>
+              } 
+            />
+          </Routes>
+
+          {/* Other content can still use mobile/desktop split */}
           {isMobileSinglePage ? (
             <div className="mobile-singlepage" role="main">
               <section id="home" className="mobile-section"><Home /></section>
               <section id="about" className="mobile-section"><About /></section>
               <section id="resume" className="mobile-section"><Resume /></section>
               <section id="projects" className="mobile-section"><Projects /></section>
-              {/* Basboussa is handled by routes even on mobile */}
               <section id="contact" className="mobile-section"><Contact /></section>
               <section id="utf" className="mobile-section"><Utf /></section>
             </div>
