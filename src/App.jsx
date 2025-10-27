@@ -50,15 +50,16 @@ function App() {
     });
   };
 
-  const isBasboussaPath = window.location.pathname.includes('/basboussa');
+  const isSpecialPath = window.location.pathname.includes('/basboussa') || 
+                        window.location.pathname.includes('/threejs');
 
   return (
     <Router>
       {/* Router-scoped effects: run hooks that require react-router context here */}
       <RouteEffects />
       <div className="App">
-        {/* Hide progress bar for Basboussa */}
-        {!isBasboussaPath && (
+        {/* Hide progress bar for special paths */}
+        {!isSpecialPath && (
           <div 
             className="scroll-progress-container"
             onClick={handleProgressBarClick}
@@ -74,8 +75,8 @@ function App() {
         
         <Header />
         <main style={{ 
-          height: isBasboussaPath ? '100vh' : 'auto',
-          overflow: isBasboussaPath ? 'hidden' : 'visible'
+          height: isSpecialPath ? '100vh' : 'auto',
+          overflow: isSpecialPath ? 'hidden' : 'visible'
         }}>
           {/* Always use Routes for Basboussa */}
           <Routes>
@@ -90,10 +91,20 @@ function App() {
                 </PageTransition>
               } 
             />
+            <Route 
+              path="/threejs" 
+              element={
+                <PageTransition>
+                  <ProtectedBasboussaRoute>
+                    <ThreeJS />
+                  </ProtectedBasboussaRoute>
+                </PageTransition>
+              } 
+            />
           </Routes>
 
           {/* Other content can still use mobile/desktop split */}
-          {isMobileSinglePage ? (
+          {isMobileSinglePage && location.pathname !== '/threejs' ? (
             <div className="mobile-singlepage" role="main">
               <section id="home" className="mobile-section"><Home /></section>
               <section id="about" className="mobile-section"><About /></section>
@@ -124,7 +135,7 @@ function App() {
             </Routes>
           )}
         </main>
-        {!isBasboussaPath && <Footer />}
+        {!isSpecialPath && <Footer />}
       </div>
     </Router>
   );

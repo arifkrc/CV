@@ -22,11 +22,8 @@ function VerifyBasboussa() {
       setStep(2);
     } else if (step === 2 && answer.toLowerCase().trim() === 'balik' || answer.trim() === 'Balik') {
       sessionStorage.setItem('basboussaVerified', 'true');
-      if (location.pathname === '/threejs') {
-        window.location.reload();
-      } else {
-        navigate('/basboussa');
-      }
+      // Stay on the current page after verification
+      window.location.reload();
     } else {
       sessionStorage.removeItem('basboussaVerified');
       navigate('/');
