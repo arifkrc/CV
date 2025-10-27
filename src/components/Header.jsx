@@ -26,6 +26,14 @@ const Header = () => {
     // Always check verification for basboussa route
     if (path === '/basboussa') {
       if (sessionStorage.getItem('basboussaVerified') !== 'true') {
+        if (window.innerWidth <= 768) {
+          const verifySection = document.getElementById('basboussaverify');
+          if (verifySection) {
+            verifySection.scrollIntoView({ behavior: 'smooth' });
+            setIsMenuOpen(false);
+            return;
+          }
+        }
         navigate('/basboussa/verify');
         return;
       }

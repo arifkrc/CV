@@ -14,15 +14,20 @@ function VerifyBasboussa() {
     } else if (step === 2 && answer.toLowerCase().trim() === 'balik') {
       sessionStorage.setItem('basboussaVerified', 'true');
       if (isMobile) {
-        // For mobile, just set the session storage and let the parent component update
-        window.location.hash = '#basboussa';
+        const basboussaSection = document.getElementById('basboussa');
+        if (basboussaSection) {
+          basboussaSection.scrollIntoView({ behavior: 'smooth' });
+        }
       } else {
         navigate('/basboussa');
       }
     } else {
       sessionStorage.removeItem('basboussaVerified');
       if (isMobile) {
-        window.location.hash = '#home';
+        const homeSection = document.getElementById('home');
+        if (homeSection) {
+          homeSection.scrollIntoView({ behavior: 'smooth' });
+        }
       } else {
         navigate('/');
       }
