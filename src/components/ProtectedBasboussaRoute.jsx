@@ -1,12 +1,18 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import VerifyBasboussa from './VerifyBasboussa';
 
 const ProtectedBasboussaRoute = ({ children }) => {
-  // Check if verification was successful (stored in session)
+  const location = useLocation();
+  const isMobile = window.innerWidth <= 768;
   const isVerified = sessionStorage.getItem('basboussaVerified') === 'true';
 
   if (!isVerified) {
-    // Redirect to verification page if not verified
+    // For mobile view, show verification component inline
+    if (isMobile) {
+      return <VerifyBasboussa />;
+    }
+    // For desktop view, redirect to verification page
     return <Navigate to="/basboussa/verify" replace />;
   }
 

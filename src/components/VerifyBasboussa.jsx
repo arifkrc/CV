@@ -1,20 +1,31 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function VerifyBasboussa() {
   const [step, setStep] = useState(1);
   const [answer, setAnswer] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const isMobile = window.innerWidth <= 768;
 
   const handleRealBasboussaVerification = () => {
     if (step === 1) {
       setStep(2);
     } else if (step === 2 && answer.toLowerCase().trim() === 'balik') {
       sessionStorage.setItem('basboussaVerified', 'true');
-      navigate('/basboussa');
+      if (isMobile) {
+        // For mobile, just set the session storage and let the parent component update
+        window.location.hash = '#basboussa';
+      } else {
+        navigate('/basboussa');
+      }
     } else {
       sessionStorage.removeItem('basboussaVerified');
-      navigate('/');
+      if (isMobile) {
+        window.location.hash = '#home';
+      } else {
+        navigate('/');
+      }
     }
   };
 
