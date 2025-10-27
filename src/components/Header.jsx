@@ -122,6 +122,20 @@ const Header = () => {
             >
               İletişim
             </button>
+            <button 
+              className={`nav-link ${isActive('/basboussa')}`}
+              onClick={() => handleNavigation('/basboussa')}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer',
+                color: '#FFD700',
+                fontWeight: isActive('/basboussa') ? '700' : '400',
+                textShadow: isActive('/basboussa') ? '0 0 10px rgba(255, 215, 0, 0.5)' : 'none'
+              }}
+            >
+              Basboussa
+            </button>
           </nav>
 
           <div className="header-controls">

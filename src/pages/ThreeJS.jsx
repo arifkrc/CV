@@ -37,7 +37,7 @@ function ConversationCard({ message, catImage, position, delay, isActive }) {
     <Html position={position} center>
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(193, 39, 45, 0.9))',
+          background: 'linear-gradient(135deg, rgba(0, 150, 57, 0.95), rgba(0, 100, 0, 0.9))',
           padding: '20px 25px',
           borderRadius: '20px',
           maxWidth: 'min(320px, 85vw)',
@@ -372,7 +372,7 @@ function Scene({ onComplete, onProgressUpdate, showFinalMessage }) {
     },
     { 
       catImage: 'https://media.giphy.com/media/L95W4wv8nnb9K/giphy.gif',
-      message: 'İnşallah kalbini kırmamışımdır... Beni dinler misin?', 
+      message: 'İnşallah kalbini kırmamışımdır...', 
       position: [0, 0, 0] 
     },
     { 
