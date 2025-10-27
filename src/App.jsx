@@ -24,7 +24,8 @@ function PageTransition({ children }) {
   );
 }
 
-function App() {
+function AppContent() {
+  const location = useLocation();
   const scrollProgress = useScrollProgress();
   const [isMobileSinglePage, setIsMobileSinglePage] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
 
@@ -50,16 +51,13 @@ function App() {
     });
   };
 
-  const isSpecialPath = window.location.pathname.includes('/basboussa') || 
-                        window.location.pathname.includes('/threejs');
+  const isSpecialPath = location.pathname.includes('/basboussa') || 
+                       location.pathname.includes('/threejs');
 
   return (
-    <Router>
-      {/* Router-scoped effects: run hooks that require react-router context here */}
-      <RouteEffects />
-      <div className="App">
-        {/* Hide progress bar for special paths */}
-        {!isSpecialPath && (
+    <div className="App">
+      {/* Hide progress bar for special paths */}
+      {!isSpecialPath && (
           <div 
             className="scroll-progress-container"
             onClick={handleProgressBarClick}
@@ -80,15 +78,15 @@ function App() {
         }}>
           <Routes>
             {/* Protected Routes */}
-            <Route path="/threejs/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
             <Route path="/threejs" element={<PageTransition><ProtectedBasboussaRoute><ThreeJS /></ProtectedBasboussaRoute></PageTransition>} />
-            <Route path="/basboussa/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
+            <Route path="/threejs/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
             <Route path="/basboussa" element={<PageTransition><ProtectedBasboussaRoute><ThreeJS /></ProtectedBasboussaRoute></PageTransition>} />
+            <Route path="/basboussa/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
             
             {/* Regular Routes */}
-            {isMobileSinglePage ? (
-              <Route path="*" element={
-                <PageTransition>
+            <Route path="/" element={
+              <PageTransition>
+                {isMobileSinglePage ? (
                   <div className="mobile-singlepage" role="main">
                     <section id="home" className="mobile-section"><Home /></section>
                     <section id="about" className="mobile-section"><About /></section>
@@ -97,11 +95,15 @@ function App() {
                     <section id="contact" className="mobile-section"><Contact /></section>
                     <section id="utf" className="mobile-section"><Utf /></section>
                   </div>
-                </PageTransition>
-              } />
-            ) : (
+                ) : (
+                  <Home />
+                )}
+              </PageTransition>
+            } />
+            
+            {/* Desktop-only Routes */}
+            {!isMobileSinglePage && (
               <>
-                <Route path="/" element={<PageTransition><Home /></PageTransition>} />
                 <Route path="/about" element={<PageTransition><About /></PageTransition>} />
                 <Route path="/resume" element={<PageTransition><Resume /></PageTransition>} />
                 <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
@@ -150,6 +152,15 @@ function RouteEffects() {
   // this component is rendered inside Router so useNavigate can be used safely
   useSectionScrollNav({ routes: ['/', '/about', '/resume', '/projects', '/basboussa', '/contact', '/utf'] });
   return null;
+}
+
+function App() {
+  return (
+    <Router>
+      <RouteEffects />
+      <AppContent />
+    </Router>
+  );
 }
 
 export default App;

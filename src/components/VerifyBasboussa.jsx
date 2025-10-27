@@ -22,8 +22,9 @@ function VerifyBasboussa() {
       setStep(2);
     } else if (step === 2 && answer.toLowerCase().trim() === 'balik' || answer.trim() === 'Balik') {
       sessionStorage.setItem('basboussaVerified', 'true');
-      // Stay on the current page after verification
-      window.location.reload();
+      // Navigate to the appropriate protected page
+      const targetPath = location.pathname.includes('/threejs') ? '/threejs' : '/basboussa';
+      navigate(targetPath, { replace: true });
     } else {
       sessionStorage.removeItem('basboussaVerified');
       navigate('/');
