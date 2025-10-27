@@ -22,9 +22,15 @@ function VerifyBasboussa() {
       setStep(2);
     } else if (step === 2 && answer.toLowerCase().trim() === 'balik' || answer.trim() === 'Balik') {
       sessionStorage.setItem('basboussaVerified', 'true');
-      // Navigate to the appropriate protected page
-      const targetPath = location.pathname.includes('/threejs') ? '/threejs' : '/basboussa';
-      navigate(targetPath, { replace: true });
+      const currentPath = location.pathname;
+      const isVerifyPath = currentPath.endsWith('/verify');
+      const basePath = isVerifyPath ? currentPath.replace('/verify', '') : currentPath;
+      
+      if (basePath === '/threejs' || basePath === '/basboussa') {
+        navigate(basePath, { replace: true });
+      } else {
+        window.location.reload();
+      }
     } else {
       sessionStorage.removeItem('basboussaVerified');
       navigate('/');

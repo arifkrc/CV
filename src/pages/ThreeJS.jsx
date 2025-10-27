@@ -444,7 +444,11 @@ function Scene({ onComplete, onProgressUpdate, showFinalMessage }) {
       {conversationStep < conversations.length && (
         <Html position={[0, -2.5, 0]} center>
           <button
-            onClick={handleNextStep}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleNextStep();
+            }}
             style={{
               background: 'linear-gradient(135deg, #C1272D, #FFD700)',
               border: 'none',
@@ -459,11 +463,20 @@ function Scene({ onComplete, onProgressUpdate, showFinalMessage }) {
               transition: 'all 0.3s ease',
               animation: 'pulse 2s infinite',
               minWidth: 'min(200px, 70vw)',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent'
+              touchAction: 'none',
+              WebkitTapHighlightColor: 'transparent',
+              transform: 'translateZ(0)',
+              willChange: 'transform'
             }}
-            onTouchStart={(e) => e.target.style.transform = 'scale(0.95)'}
-            onTouchEnd={(e) => e.target.style.transform = 'scale(1)'}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.target.style.transform = 'scale(0.95)';
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.target.style.transform = 'scale(1)';
+              handleNextStep();
+            }}
           >
             {conversationStep < conversations.length - 1 ? 'Devam Et' : 'Bitir'}
           </button>
@@ -541,9 +554,6 @@ const ThreeJS = () => {
   const [isVerified, setIsVerified] = useState(false);
   
   useEffect(() => {
-    if (sessionStorage.getItem('basboussaVerified') === 'true') {
-      setIsVerified(true);
-    }
     // Add classes to both body and container
     document.body.classList.add('threejs-active');
     
@@ -554,7 +564,7 @@ const ThreeJS = () => {
       document.body.classList.remove('threejs-active');
       document.body.style.overflow = '';
     };
-  }, [navigate]);
+  }, []);
   
   const handleComplete = () => {
     setConversationProgress(100);
@@ -564,10 +574,6 @@ const ThreeJS = () => {
   const handleProgressUpdate = (progress) => {
     setConversationProgress(progress);
   };
-
-  if (!isVerified) {
-    return <VerifyBasboussa />;
-  }
   
   return (
     <div style={{ 
