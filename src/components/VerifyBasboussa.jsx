@@ -22,26 +22,10 @@ function VerifyBasboussa() {
       setStep(2);
     } else if (step === 2 && answer.toLowerCase().trim() === 'balik') {
       sessionStorage.setItem('basboussaVerified', 'true');
-      hideVerifySection();
-      if (isMobile) {
-        const basboussaSection = document.getElementById('basboussa');
-        if (basboussaSection) {
-          basboussaSection.scrollIntoView({ behavior: 'smooth' });
-        }
-      } else {
-        navigate('/basboussa');
-      }
+      navigate('/basboussa');
     } else {
       sessionStorage.removeItem('basboussaVerified');
-      hideVerifySection();
-      if (isMobile) {
-        const homeSection = document.getElementById('home');
-        if (homeSection) {
-          homeSection.scrollIntoView({ behavior: 'smooth' });
-        }
-      } else {
-        navigate('/');
-      }
+      navigate('/');
       setStep(1); // Reset to first step
       setAnswer(''); // Clear the answer
     }
@@ -98,19 +82,8 @@ function VerifyBasboussa() {
               </button>
               <button
                 onClick={() => {
-                  if (isMobile) {
-                    const verifySection = document.getElementById('basboussaverify');
-                    if (verifySection) {
-                      verifySection.style.display = 'none';
-                    }
-                    const homeSection = document.getElementById('home');
-                    if (homeSection) {
-                      homeSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  } else {
-                    navigate('/');
-                  }
                   sessionStorage.removeItem('basboussaVerified');
+                  navigate('/');
                 }}
                 style={{
                   padding: '0.8rem 2rem',

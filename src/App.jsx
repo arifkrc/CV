@@ -76,19 +76,7 @@ function App() {
               <section id="about" className="mobile-section"><About /></section>
               <section id="resume" className="mobile-section"><Resume /></section>
               <section id="projects" className="mobile-section"><Projects /></section>
-              <section id="basboussaverify" className="mobile-section" style={{ 
-                minHeight: '100vh', 
-                display: 'none',
-                alignItems: 'center', 
-                justifyContent: 'center' 
-              }}>
-                <VerifyBasboussa />
-              </section>
-              <section id="basboussa" className="mobile-section">
-                <ProtectedBasboussaRoute>
-                  <ThreeJS />
-                </ProtectedBasboussaRoute>
-              </section>
+              {/* Basboussa is handled by routes even on mobile */}
               <section id="contact" className="mobile-section"><Contact /></section>
               <section id="utf" className="mobile-section"><Utf /></section>
             </div>
