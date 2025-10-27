@@ -78,12 +78,22 @@ function AppContent() {
         }}>
           <Routes>
             {/* Protected Routes */}
-            <Route path="/threejs" element={<PageTransition><ProtectedBasboussaRoute><ThreeJS /></ProtectedBasboussaRoute></PageTransition>} />
-            <Route path="/threejs/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
-            <Route path="/basboussa" element={<PageTransition><ProtectedBasboussaRoute><ThreeJS /></ProtectedBasboussaRoute></PageTransition>} />
-            <Route path="/basboussa/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
+            <Route path="/basboussa" element={
+              <PageTransition>
+                <ProtectedBasboussaRoute>
+                  <ThreeJS />
+                </ProtectedBasboussaRoute>
+              </PageTransition>
+            } />
+            <Route path="/basboussa/verify" element={
+              <PageTransition>
+                <VerifyBasboussa />
+              </PageTransition>
+            } />
+            <Route path="/threejs" element={<Navigate to="/basboussa" replace />} />
+            <Route path="/threejs/verify" element={<Navigate to="/basboussa/verify" replace />} />
             
-            {/* Regular Routes */}
+            {/* Main Content Routes */}
             <Route path="/" element={
               <PageTransition>
                 {isMobileSinglePage ? (
@@ -101,7 +111,7 @@ function AppContent() {
               </PageTransition>
             } />
             
-            {/* Desktop-only Routes */}
+            {/* Desktop-only routes */}
             {!isMobileSinglePage && (
               <>
                 <Route path="/about" element={<PageTransition><About /></PageTransition>} />
@@ -112,39 +122,9 @@ function AppContent() {
               </>
             )}
           </Routes>
-            <div className="mobile-singlepage" role="main">
-              <section id="home" className="mobile-section"><Home /></section>
-              <section id="about" className="mobile-section"><About /></section>
-              <section id="resume" className="mobile-section"><Resume /></section>
-              <section id="projects" className="mobile-section"><Projects /></section>
-              <section id="contact" className="mobile-section"><Contact /></section>
-              <section id="utf" className="mobile-section"><Utf /></section>
-            </div>
-          ) : (
-            <Routes>
-              <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-              <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-              <Route path="/resume" element={<PageTransition><Resume /></PageTransition>} />
-              <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
-              <Route path="/basboussa/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
-              <Route 
-                path="/basboussa" 
-                element={
-                  <PageTransition>
-                    <ProtectedBasboussaRoute>
-                      <ThreeJS />
-                    </ProtectedBasboussaRoute>
-                  </PageTransition>
-                } 
-              />
-              <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
-              <Route path="/utf" element={<PageTransition><Utf /></PageTransition>} />
-            </Routes>
-          )}
         </main>
         {!isSpecialPath && <Footer />}
       </div>
-    </Router>
   );
 }
 
