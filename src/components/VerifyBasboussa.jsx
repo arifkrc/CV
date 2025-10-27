@@ -84,7 +84,21 @@ function VerifyBasboussa() {
                 Yes
               </button>
               <button
-                onClick={() => navigate('/')}
+                onClick={() => {
+                  if (isMobile) {
+                    const verifySection = document.getElementById('basboussaverify');
+                    if (verifySection) {
+                      verifySection.style.display = 'none';
+                    }
+                    const homeSection = document.getElementById('home');
+                    if (homeSection) {
+                      homeSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  } else {
+                    navigate('/');
+                  }
+                  sessionStorage.removeItem('basboussaVerified');
+                }}
                 style={{
                   padding: '0.8rem 2rem',
                   fontSize: '1.1rem',

@@ -29,6 +29,7 @@ const Header = () => {
         if (window.innerWidth <= 768) {
           const verifySection = document.getElementById('basboussaverify');
           if (verifySection) {
+            verifySection.style.display = 'flex';
             verifySection.scrollIntoView({ behavior: 'smooth' });
             setIsMenuOpen(false);
             return;
