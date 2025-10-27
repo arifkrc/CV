@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -8,6 +8,9 @@ import Resume from './pages/Resume';
 import Projects from './pages/Projects';
 import Contact from './pages/Contact';
 import Utf from './pages/Utf';
+import ThreeJS from './pages/ThreeJS';
+import VerifyBasboussa from './components/VerifyBasboussa';
+import ProtectedBasboussaRoute from './components/ProtectedBasboussaRoute';
 import { useScrollProgress, useSectionScrollNav } from './hooks';
 import './styles/App.css';
 
@@ -73,6 +76,11 @@ function App() {
               <section id="about" className="mobile-section"><About /></section>
               <section id="resume" className="mobile-section"><Resume /></section>
               <section id="projects" className="mobile-section"><Projects /></section>
+              <section id="basboussa" className="mobile-section">
+                <ProtectedBasboussaRoute>
+                  <ThreeJS />
+                </ProtectedBasboussaRoute>
+              </section>
               <section id="contact" className="mobile-section"><Contact /></section>
               <section id="utf" className="mobile-section"><Utf /></section>
             </div>
@@ -82,6 +90,17 @@ function App() {
               <Route path="/about" element={<PageTransition><About /></PageTransition>} />
               <Route path="/resume" element={<PageTransition><Resume /></PageTransition>} />
               <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
+              <Route path="/basboussa/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
+              <Route 
+                path="/basboussa" 
+                element={
+                  <PageTransition>
+                    <ProtectedBasboussaRoute>
+                      <ThreeJS />
+                    </ProtectedBasboussaRoute>
+                  </PageTransition>
+                } 
+              />
               <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
               <Route path="/utf" element={<PageTransition><Utf /></PageTransition>} />
             </Routes>
@@ -95,7 +114,7 @@ function App() {
 
 function RouteEffects() {
   // this component is rendered inside Router so useNavigate can be used safely
-  useSectionScrollNav({ routes: ['/', '/about', '/resume', '/projects', '/contact', '/utf'] });
+  useSectionScrollNav({ routes: ['/', '/about', '/resume', '/projects', '/basboussa', '/contact', '/utf'] });
   return null;
 }
 

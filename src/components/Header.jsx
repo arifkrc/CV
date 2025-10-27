@@ -23,6 +23,14 @@ const Header = () => {
   };
 
   const handleNavigation = (path) => {
+    // Always check verification for basboussa route
+    if (path === '/basboussa') {
+      if (sessionStorage.getItem('basboussaVerified') !== 'true') {
+        navigate('/basboussa/verify');
+        return;
+      }
+    }
+
     // On small screens, scroll to section IDs instead of navigating routes
     if (window.innerWidth <= 768) {
       setIsMenuOpen(false);
