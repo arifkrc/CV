@@ -542,9 +542,7 @@ const ThreeJS = () => {
   
   useEffect(() => {
     const verified = sessionStorage.getItem('basboussaVerified');
-    if (!verified) {
-      navigate('/');
-    } else {
+    if (verified === 'true') {
       setIsVerified(true);
     }
     // Add classes to both body and container
