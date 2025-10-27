@@ -50,26 +50,33 @@ function App() {
     });
   };
 
+  const isBasboussaPath = window.location.pathname.includes('/basboussa');
+
   return (
     <Router>
       {/* Router-scoped effects: run hooks that require react-router context here */}
       <RouteEffects />
       <div className="App">
-        {/* Scroll Progress Bar */}
-        <div 
-          className="scroll-progress-container"
-          onClick={handleProgressBarClick}
-          style={{ cursor: 'pointer' }}
-          title="Sayfada istediğiniz konuma gitmek için tıklayın"
-        >
+        {/* Hide progress bar for Basboussa */}
+        {!isBasboussaPath && (
           <div 
-            className="scroll-progress-bar"
-            style={{ width: `${scrollProgress}%` }}
-          ></div>
-        </div>
+            className="scroll-progress-container"
+            onClick={handleProgressBarClick}
+            style={{ cursor: 'pointer' }}
+            title="Sayfada istediğiniz konuma gitmek için tıklayın"
+          >
+            <div 
+              className="scroll-progress-bar"
+              style={{ width: `${scrollProgress}%` }}
+            ></div>
+          </div>
+        )}
         
         <Header />
-        <main>
+        <main style={{ 
+          height: isBasboussaPath ? '100vh' : 'auto',
+          overflow: isBasboussaPath ? 'hidden' : 'visible'
+        }}>
           {/* Always use Routes for Basboussa */}
           <Routes>
             <Route path="/basboussa/verify" element={<PageTransition><VerifyBasboussa /></PageTransition>} />
@@ -117,7 +124,7 @@ function App() {
             </Routes>
           )}
         </main>
-        <Footer />
+        {!isBasboussaPath && <Footer />}
       </div>
     </Router>
   );

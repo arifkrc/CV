@@ -537,9 +537,15 @@ const ThreeJS = () => {
   const [showFinalMessage, setShowFinalMessage] = useState(false);
   
   useEffect(() => {
+    // Add classes to both body and container
     document.body.classList.add('threejs-active');
+    
+    // Remove scrolling
+    document.body.style.overflow = 'hidden';
+    
     return () => {
       document.body.classList.remove('threejs-active');
+      document.body.style.overflow = '';
     };
   }, []);
   
@@ -554,9 +560,12 @@ const ThreeJS = () => {
 
   return (
     <div style={{ 
-      width: '100%', 
+      width: '100%',
       height: '100vh',
-      position: 'relative', 
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      zIndex: 1000,
       background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 75%, #2d132c 100%)',
       overflow: 'hidden',
       touchAction: 'pan-x pan-y'

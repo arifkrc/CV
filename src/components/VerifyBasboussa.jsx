@@ -20,7 +20,7 @@ function VerifyBasboussa() {
   const handleRealBasboussaVerification = () => {
     if (step === 1) {
       setStep(2);
-    } else if (step === 2 && answer.toLowerCase().trim() === 'balik') {
+    } else if (step === 2 && answer.toLowerCase().trim() === 'balik' || answer.trim() === 'Balik') {
       sessionStorage.setItem('basboussaVerified', 'true');
       navigate('/basboussa');
     } else {
