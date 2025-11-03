@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// PWA Installation Hook
+export { usePWAInstall } from './usePWAInstall';
+
 // Scroll Progress Hook
 export const useScrollProgress = () => {
   const [scrollProgress, setScrollProgress] = useState(0);

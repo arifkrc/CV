@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator for PWA</title>
+    <style>
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .instructions {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>PWA Icon Generator</h2>
+        <p>This page generates the required PWA icons. Right-click on each canvas below and "Save image as" to save the icons:</p>
+        <ul>
+            <li>Save the first canvas as: <strong>icon-192x192.png</strong></li>
+            <li>Save the second canvas as: <strong>icon-512x512.png</strong></li>
+            <li>Save the third canvas as: <strong>apple-touch-icon.png</strong></li>
+        </ul>
+        <p>Place these files in the <code>public</code> folder of your project.</p>
+    </div>
+
+    <canvas id="icon192" width="192" height="192"></canvas>
+    <canvas id="icon512" width="512" height="512"></canvas>
+    <canvas id="iconApple" width="180" height="180"></canvas>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Scale factor
+            const scale = size / 192;
+            
+            // Factory building
+            ctx.fillStyle = 'white';
+            ctx.fillRect(20 * scale, 80 * scale, 88 * scale, 48 * scale);
+            
+            // Chimneys
+            ctx.fillRect(30 * scale, 40 * scale, 12 * scale, 48 * scale);
+            ctx.fillRect(50 * scale, 50 * scale, 12 * scale, 38 * scale);
+            ctx.fillRect(70 * scale, 35 * scale, 12 * scale, 53 * scale);
+            
+            // Windows
+            ctx.fillStyle = '#2563eb';
+            for (let row = 0; row < 2; row++) {
+                for (let col = 0; col < 5; col++) {
+                    ctx.fillRect((30 + col * 15) * scale, (90 + row * 15) * scale, 8 * scale, 8 * scale);
+                }
+            }
+            
+            // Timer circle
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(96 * scale, 50 * scale, 16 * scale, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#2563eb';
+            ctx.beginPath();
+            ctx.arc(96 * scale, 50 * scale, 12 * scale, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Clock hands
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2 * scale;
+            ctx.beginPath();
+            ctx.moveTo(96 * scale, 44 * scale);
+            ctx.lineTo(96 * scale, 50 * scale);
+            ctx.lineTo(101 * scale, 55 * scale);
+            ctx.stroke();
+        }
+
+        // Generate icons
+        drawIcon(document.getElementById('icon192'), 192);
+        drawIcon(document.getElementById('icon512'), 512);
+        drawIcon(document.getElementById('iconApple'), 180);
+    </script>
+</body>
+</html>

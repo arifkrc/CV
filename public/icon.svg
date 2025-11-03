@@ -1,0 +1,39 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="192" height="192" rx="32" fill="#2563eb"/>
+  
+  <!-- Factory/Production Icon -->
+  <g transform="translate(32,32)">
+    <!-- Building base -->
+    <rect x="20" y="80" width="88" height="48" fill="white" rx="4"/>
+    
+    <!-- Chimney -->
+    <rect x="30" y="40" width="12" height="48" fill="white" rx="2"/>
+    <rect x="50" y="50" width="12" height="38" fill="white" rx="2"/>
+    <rect x="70" y="35" width="12" height="53" fill="white" rx="2"/>
+    
+    <!-- Smoke -->
+    <circle cx="36" cy="35" r="3" fill="white" opacity="0.7"/>
+    <circle cx="56" cy="45" r="2.5" fill="white" opacity="0.7"/>
+    <circle cx="76" cy="30" r="3.5" fill="white" opacity="0.7"/>
+    
+    <!-- Windows -->
+    <rect x="30" y="90" width="8" height="8" fill="#2563eb" rx="1"/>
+    <rect x="45" y="90" width="8" height="8" fill="#2563eb" rx="1"/>
+    <rect x="60" y="90" width="8" height="8" fill="#2563eb" rx="1"/>
+    <rect x="75" y="90" width="8" height="8" fill="#2563eb" rx="1"/>
+    <rect x="90" y="90" width="8" height="8" fill="#2563eb" rx="1"/>
+    
+    <rect x="30" y="105" width="8" height="8" fill="#2563eb" rx="1"/>
+    <rect x="45" y="105" width="8" height="8" fill="#2563eb" rx="1"/>
+    <rect x="60" y="105" width="8" height="8" fill="#2563eb" rx="1"/>
+    <rect x="75" y="105" width="8" height="8" fill="#2563eb" rx="1"/>
+    <rect x="90" y="105" width="8" height="8" fill="#2563eb" rx="1"/>
+    
+    <!-- Timer symbol -->
+    <circle cx="96" cy="50" r="16" fill="white"/>
+    <circle cx="96" cy="50" r="12" fill="#2563eb"/>
+    <line x1="96" y1="44" x2="96" y2="50" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <line x1="96" y1="50" x2="101" y2="55" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

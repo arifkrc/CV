@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Database, Send, Loader2, Plus, Trash2, Play, Pause, Square } from 'lucide-react';
-import { usePageInit } from '../hooks';
+import { Database, Send, Loader2, Plus, Trash2, Play, Pause, Square, Download, X } from 'lucide-react';
+import { usePageInit, usePWAInstall } from '../hooks';
 
 const PWA = () => {
   usePageInit(); // Scroll to top on page load
+  const { showInstallPrompt, installPWA, dismissInstallPrompt } = usePWAInstall();
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
@@ -323,6 +324,74 @@ const PWA = () => {
   return (
     <div className="section">
       <div className="container">
+        {/* PWA Install Banner */}
+        {showInstallPrompt && (
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            left: '20px',
+            right: '20px',
+            zIndex: 1000,
+            background: 'var(--primary-color)',
+            color: 'white',
+            padding: '1rem',
+            borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            animation: 'fadeInDown 0.5s ease'
+          }}>
+            <div style={{ flex: 1, minWidth: '200px' }}>
+              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>
+                📱 Ana Ekrana Ekle
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.9 }}>
+                Bu uygulamayı ana ekranınıza ekleyerek offline kullanabilirsiniz!
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={installPWA}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1rem',
+                  background: 'white',
+                  color: 'var(--primary-color)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                <Download size={16} />
+                Yükle
+              </button>
+              <button
+                onClick={dismissInstallPrompt}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
         <h2 className={`section-title ${isVisible ? 'animate-fadeInUp' : ''}`}>
           <Database size={32} style={{ marginRight: '0.5rem' }} />
           Üretim Takip Sistemi
