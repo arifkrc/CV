@@ -114,6 +114,13 @@ const Header = () => {
             >
               İletişim
             </button>
+            <button 
+              className={`nav-link ${isActive('/pwa')}`}
+              onClick={() => handleNavigation('/pwa')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              PWA
+            </button>
           </nav>
 
           <div className="header-controls">

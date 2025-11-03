@@ -7,6 +7,7 @@ import About from './pages/About';
 import Resume from './pages/Resume';
 import Projects from './pages/Projects';
 import Contact from './pages/Contact';
+import PWA from './pages/PWA';
 import Utf from './pages/Utf';
 import { useScrollProgress, useSectionScrollNav } from './hooks';
 import './styles/App.css';
@@ -74,6 +75,7 @@ function App() {
               <section id="resume" className="mobile-section"><Resume /></section>
               <section id="projects" className="mobile-section"><Projects /></section>
               <section id="contact" className="mobile-section"><Contact /></section>
+              <section id="pwa" className="mobile-section"><PWA /></section>
               <section id="utf" className="mobile-section"><Utf /></section>
             </div>
           ) : (
@@ -83,6 +85,7 @@ function App() {
               <Route path="/resume" element={<PageTransition><Resume /></PageTransition>} />
               <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
               <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+              <Route path="/pwa" element={<PageTransition><PWA /></PageTransition>} />
               <Route path="/utf" element={<PageTransition><Utf /></PageTransition>} />
             </Routes>
           )}
@@ -95,7 +98,7 @@ function App() {
 
 function RouteEffects() {
   // this component is rendered inside Router so useNavigate can be used safely
-  useSectionScrollNav({ routes: ['/', '/about', '/resume', '/projects', '/contact', '/utf'] });
+  useSectionScrollNav({ routes: ['/', '/about', '/resume', '/projects', '/contact', '/pwa', '/utf'] });
   return null;
 }
 
