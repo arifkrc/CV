@@ -76,54 +76,91 @@ export const usePageInit = () => {
 
 // Mobile section scroll navigation
 export const useSectionScrollNav = (opts = {}) => {
-  const { thresholdPx = 120, cooldownMs = 900, routes = ['/', '/about', '/resume', '/projects', '/contact', '/utf'], enabled = true } = opts;
+  const { thresholdPx = 80, cooldownMs = 600, routes = ['/', '/about', '/resume', '/projects', '/contact', '/pwa', '/utf'], enabled = true } = opts;
   const navigate = useNavigate();
 
   useEffect(() => {
-    const routesRef = { current: routes };
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !enabled) return;
 
     let lastNav = 0;
+    let isMobile = window.innerWidth <= 768;
+
+    // Update mobile detection on resize
+    const handleResize = () => {
+      isMobile = window.innerWidth <= 768;
+    };
 
     const onScroll = () => {
-  // only active on mobile sized viewports and when enabled
-  if (!enabled || window.innerWidth > 768) return;
+      // Only active on mobile sized viewports
+      if (!isMobile) return;
 
       const now = Date.now();
       if (now - lastNav < cooldownMs) return;
 
       const scrollTop = window.scrollY;
       const viewport = window.innerHeight;
-      const remaining = document.documentElement.scrollHeight - (scrollTop + viewport);
+      const docHeight = document.documentElement.scrollHeight;
+      const remaining = docHeight - (scrollTop + viewport);
 
       const currentPath = window.location.pathname || '/';
       const idx = routes.indexOf(currentPath);
 
-      // if near bottom and not last route -> go next
+      // Debug logging (remove in production)
+      console.log('Scroll Navigation Debug:', {
+        currentPath,
+        idx,
+        scrollTop,
+        remaining,
+        thresholdPx,
+        routes,
+        docHeight,
+        viewport
+      });
+
+      // If near bottom and not last route -> go next
       if (remaining <= thresholdPx && idx >= 0 && idx < routes.length - 1) {
         lastNav = now;
+        console.log('Navigating to next:', routes[idx + 1]);
         navigate(routes[idx + 1]);
-        window.scrollTo({ top: 0, behavior: 'auto' });
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }, 50);
         return;
       }
 
-      // if near top and not first route -> go previous
+      // If near top and not first route -> go previous
       if (scrollTop <= thresholdPx && idx > 0) {
         lastNav = now;
+        console.log('Navigating to previous:', routes[idx - 1]);
         navigate(routes[idx - 1]);
-        window.scrollTo({ top: 0, behavior: 'auto' });
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }, 50);
         return;
       }
     };
 
-  window.addEventListener('scroll', onScroll, { passive: true });
-  // also listen to touchend to catch swipe-like behavior
-  window.addEventListener('touchend', onScroll, { passive: true });
+    // Throttle scroll events for better performance
+    let ticking = false;
+    const throttledScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          onScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
 
-    // cleanup
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('scroll', throttledScroll, { passive: true });
+    window.addEventListener('touchend', throttledScroll, { passive: true });
+
+    // Cleanup
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('touchend', onScroll);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', throttledScroll);
+      window.removeEventListener('touchend', throttledScroll);
     };
   }, [thresholdPx, cooldownMs, navigate, routes, enabled]);
 };
