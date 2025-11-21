@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { AtSign, Smartphone, MapPin, SendHorizontal, Linkedin, Github } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const Contact = () => {
   const [formData, setFormData] = useState({

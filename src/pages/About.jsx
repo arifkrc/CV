@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
-import { usePageNavigation, usePageInit } from '../hooks';
+import { useNavigate } from 'react-router-dom';
 
 const About = () => {
-  const navigateWithTransition = usePageNavigation();
-  usePageInit(); // Scroll to top on page load
+  const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -37,7 +40,7 @@ const About = () => {
   }, []);
   
   const handleNavigation = (path) => {
-    navigateWithTransition(path);
+    navigate(path);
   };
 
   const getGridColumns = () => {
@@ -95,24 +98,7 @@ const About = () => {
             </p>
 
             {/* Projects Link */}
-            <div style={{ 
-              textAlign: 'center', 
-              marginBottom: '2rem',
-              padding: '2rem',
-              background: 'var(--background-gray)',
-              borderRadius: '12px',
-              border: '1px solid var(--border-color)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = 'none';
-            }}
-            >
+            <div className="about-project-card">
               <h4 style={{ color: 'var(--primary-color)', marginBottom: '1rem' }}>
                 🚀 Projelerimi İnceleyin
               </h4>
@@ -121,21 +107,7 @@ const About = () => {
               </p>
               <button 
                 onClick={() => handleNavigation('/projects')}
-                className="btn" 
-                style={{ 
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
+                className="btn about-project-btn"
               >
                 Projeleri Görüntüle
                 <ArrowUpRight size={18} />
@@ -165,18 +137,7 @@ const About = () => {
                     transition: 'all 0.3s ease',
                     textAlign: 'center',
                     cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-5px)';
-                    e.target.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
-                    e.target.style.borderColor = 'var(--secondary-color)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
-                    e.target.style.borderColor = 'var(--border-color)';
-                  }}
-                  >
+                  }}>
                     <div style={{ 
                       fontSize: '2rem', 
                       marginBottom: '1rem',

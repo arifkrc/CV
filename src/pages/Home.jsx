@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { FolderOpen, ArrowRight } from 'lucide-react';
-import { usePageNavigation, usePageInit } from '../hooks';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
-  const navigateWithTransition = usePageNavigation();
-  usePageInit(); // Scroll to top on page load
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Animation trigger
   useEffect(() => {
@@ -13,7 +16,7 @@ const Home = () => {
   }, []);
   
   const handleNavigation = (path) => {
-    navigateWithTransition(path);
+    navigate(path);
   };
 
   return (
@@ -58,33 +61,7 @@ const Home = () => {
             <div className={`hero-buttons ${isVisible ? 'animate-fadeInUp' : ''}`} style={{ animationDelay: '2.8s', opacity: 0 }}>
               <div 
                 onClick={() => handleNavigation('/resume')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  color: 'var(--secondary-color)',
-                  fontSize: '1.1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  textDecoration: 'none',
-                  border: '2px solid var(--secondary-color)',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  transition: 'all 0.3s ease',
-                  background: 'transparent'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'var(--secondary-color)';
-                  e.target.style.color = 'white';
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'transparent';
-                  e.target.style.color = 'var(--secondary-color)';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
+                className="hero-cta-btn"
               >
                 <FolderOpen size={20} />
                 Özgeçmişimi İncele

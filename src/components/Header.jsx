@@ -5,16 +5,27 @@ import '../styles/Header.css';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved === 'true';
+  });
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark-theme');
+    }
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('darkMode', String(newMode));
     document.documentElement.classList.toggle('dark-theme');
   };
 
@@ -23,21 +34,6 @@ const Header = () => {
   };
 
   const handleNavigation = (path) => {
-    // On small screens, scroll to section IDs instead of navigating routes
-    if (window.innerWidth <= 768) {
-      setIsMenuOpen(false);
-      const id = path === '/' ? 'home' : path.replace(/^\//, '');
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        // fallback to route navigation if section not present
-        navigate(path);
-      }
-      return;
-    }
-
-    // Desktop: keep route transition behavior
     document.body.style.opacity = '0.95';
     document.body.style.transition = 'opacity 0.2s ease';
     
@@ -119,7 +115,7 @@ const Header = () => {
               onClick={() => handleNavigation('/pwa')}
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}
             >
-              PWA
+              Teknolojiler
             </button>
           </nav>
 

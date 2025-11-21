@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -9,7 +9,7 @@ import Projects from './pages/Projects';
 import Contact from './pages/Contact';
 import PWA from './pages/PWA';
 import Utf from './pages/Utf';
-import { useScrollProgress, useSectionScrollNav } from './hooks';
+import { useScrollProgress } from './hooks';
 import './styles/App.css';
 
 function PageTransition({ children }) {
@@ -24,13 +24,6 @@ function PageTransition({ children }) {
 
 function App() {
   const scrollProgress = useScrollProgress();
-  const [isMobileSinglePage, setIsMobileSinglePage] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
-
-  useEffect(() => {
-    const onResize = () => setIsMobileSinglePage(window.innerWidth <= 768);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
 
   const handleProgressBarClick = (e) => {
     const progressBar = e.currentTarget;
@@ -50,8 +43,6 @@ function App() {
 
   return (
     <Router>
-      {/* Router-scoped effects: run hooks that require react-router context here */}
-      <RouteEffects />
       <div className="App">
         {/* Scroll Progress Bar */}
         <div 
@@ -68,38 +59,20 @@ function App() {
         
         <Header />
         <main>
-          {isMobileSinglePage ? (
-            <div className="mobile-singlepage" role="main">
-              <section id="home" className="mobile-section"><Home /></section>
-              <section id="about" className="mobile-section"><About /></section>
-              <section id="resume" className="mobile-section"><Resume /></section>
-              <section id="projects" className="mobile-section"><Projects /></section>
-              <section id="contact" className="mobile-section"><Contact /></section>
-              <section id="pwa" className="mobile-section"><PWA /></section>
-              <section id="utf" className="mobile-section"><Utf /></section>
-            </div>
-          ) : (
-            <Routes>
-              <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-              <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-              <Route path="/resume" element={<PageTransition><Resume /></PageTransition>} />
-              <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
-              <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
-              <Route path="/pwa" element={<PageTransition><PWA /></PageTransition>} />
-              <Route path="/utf" element={<PageTransition><Utf /></PageTransition>} />
-            </Routes>
-          )}
+          <Routes>
+            <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+            <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+            <Route path="/resume" element={<PageTransition><Resume /></PageTransition>} />
+            <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
+            <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+            <Route path="/pwa" element={<PageTransition><PWA /></PageTransition>} />
+            <Route path="/utf" element={<PageTransition><Utf /></PageTransition>} />
+          </Routes>
         </main>
         <Footer />
       </div>
     </Router>
   );
-}
-
-function RouteEffects() {
-  // this component is rendered inside Router so useNavigate can be used safely
-  useSectionScrollNav({ routes: ['/', '/about', '/resume', '/projects', '/contact', '/pwa', '/utf'] });
-  return null;
 }
 
 export default App;
