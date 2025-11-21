@@ -16,7 +16,7 @@ const Header = () => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark-theme');
     }
-  }, []);
+  }, [isDarkMode]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -116,6 +116,13 @@ const Header = () => {
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}
             >
               Teknolojiler
+            </button>
+            <button 
+              className={`nav-link ${isActive('/prototypeutf')}`}
+              onClick={() => handleNavigation('/prototypeutf')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              PrototypeUTF
             </button>
           </nav>
 

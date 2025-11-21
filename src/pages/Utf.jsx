@@ -1,1313 +1,1670 @@
 import React, { useState } from 'react';
 
-const processOptions = [
-  'Genel İşlem',
-  'CDT1 1. Yön',
-  'CDT2 2. Yön',
-  'Delik Açma',
-  'ABS',
-  'Balans',
-  'Fellow'
-];
-
-const foremanOptions = [
-  'Mehmet Yılmaz',
-  'Ayşe Demir',
-  'Ali Kaya'
-];
-
-const getYesterday = () => {
+const getToday = () => {
   const d = new Date();
-  d.setDate(d.getDate() - 1);
   return d.toISOString().slice(0, 10);
 };
 
 const Utf = () => {
-  // CSV indirme yardımcı fonksiyonu
-  function downloadCSV(data, columns, filename) {
-    if (!data.length) return;
-    const header = columns.join(',');
-    const rows = data.map(row => columns.map(col => `"${row[col] ?? ''}"`).join(','));
-    const csvContent = '\uFEFF' + [header, ...rows].join('\r\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
+  // Login state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
-  const [activeTab, setActiveTab] = useState('uretim');
-  
-  // Üretim
-  const [form, setForm] = useState({
-    date: getYesterday(), 
-    shift: '', 
-    operator: '', 
-    employee: '', 
-    foreman: '', 
-    process: '', 
-    productCode: '', 
-    quantity: '', 
-    hatNo: '',
-    pause_baslangic: '',
-    pause_bitis: '',
-    pause_dokum: '',
-    pause_ayar: '',
-    pause_ariza: '',
-    pause_elmas: '',
-    pause_temizlik: '15',
-    pause_mola: '30',
-    pause_operasyon: ''
-  });
-  
-  const shiftMap = { '1': '00-08', '2': '08-16', '3': '16-00' };
-  const [records, setRecords] = useState([]);
-  
-  // Paketleme
-  const [packForm, setPackForm] = useState({ date: getYesterday(), productCode: '', quantity: '' });
-  const [packRecords, setPackRecords] = useState([]);
-  
-  // Fire
-  const [fireForm, setFireForm] = useState({ date: getYesterday(), productCode: '', quantity: '', errorType: '' });
-  const [fireRecords, setFireRecords] = useState([]);
-  
-  // Gün raporu
-  const [gunRaporu, setGunRaporu] = useState([]);
-  const [yKapamaVeri] = useState([]);
-  
-  // Fire formu
-  const handleFireChange = (e) => setFireForm({ ...fireForm, [e.target.name]: e.target.value });
-  const handleFireSubmit = (e) => {
+  // Credentials
+  const VALID_USERNAME = 'admin';
+  const VALID_PASSWORD = 'admin123';
+
+  const handleLogin = (e) => {
     e.preventDefault();
-    setFireRecords([...fireRecords, fireForm]);
-    setFireForm({ date: getYesterday(), productCode: '', quantity: '', errorType: '' });
-  };
-
-  // Üretim formu
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const newForm = { ...form, [name]: value };
-    
-    // Vardiya otomatik ayarlama
-    if (name === 'pause_baslangic' || name === 'pause_bitis') {
-      const baslangic = name === 'pause_baslangic' ? value : form.pause_baslangic;
-      const bitis = name === 'pause_bitis' ? value : form.pause_bitis;
-      
-      if (baslangic && bitis) {
-        const baslangicHour = parseInt(baslangic.split(':')[0]);
-        // const bitisHour = parseInt(bitis.split(':')[0]); // Şu an kullanılmıyor
-        
-        // Vardiya belirleme mantığı
-        let shift = '';
-        if (baslangicHour >= 0 && baslangicHour < 8) {
-          shift = '1'; // 00-08
-        } else if (baslangicHour >= 8 && baslangicHour < 16) {
-          shift = '2'; // 08-16
-        } else {
-          shift = '3'; // 16-00
-        }
-        
-        newForm.shift = shift;
-      }
+    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+      setIsLoggedIn(true);
+      setLoginError('');
+    } else {
+      setLoginError('Kullanıcı adı veya şifre hatalı!');
     }
-    
-    setForm(newForm);
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Duraksamalarda boş değerleri 0 yap
-    const formData = {
-      ...form,
-      pause_dokum: form.pause_dokum || '0',
-      pause_ayar: form.pause_ayar || '0',
-      pause_ariza: form.pause_ariza || '0',
-      pause_elmas: form.pause_elmas || '0',
-      pause_temizlik: form.pause_temizlik || '15',
-      pause_mola: form.pause_mola || '30',
-      pause_operasyon: form.pause_operasyon || '0'
-    };
-    
-    setRecords([...records, formData]);
-    setForm({ 
-      date: getYesterday(), 
-      shift: '', 
-      operator: '', 
-      employee: '', 
-      foreman: '', 
-      process: '', 
-      productCode: '', 
-      quantity: '', 
-      hatNo: '',
-      pause_baslangic: '',
-      pause_bitis: '',
-      pause_dokum: '',
-      pause_ayar: '',
-      pause_ariza: '',
-      pause_elmas: '',
-      pause_temizlik: '15',
-      pause_mola: '30',
-      pause_operasyon: ''
-    });
-  };
-  
-  // Paketleme formu
-  const handlePackChange = (e) => setPackForm({ ...packForm, [e.target.name]: e.target.value });
-  const handlePackSubmit = (e) => {
-    e.preventDefault();
-    setPackRecords([...packRecords, packForm]);
-    setPackForm({ date: getYesterday(), productCode: '', quantity: '' });
-  };
-  
-  const [uretimFilter, setUretimFilter] = useState({});
-  // Gelecekte kullanılacak filtreler
-  // const [paketlemeFilter, setPaketlemeFilter] = useState({});
-  // const [fireFilter, setFireFilter] = useState({});
-  // const [gunRaporuFilter, setGunRaporuFilter] = useState({});
-  // const [yKapamaFilter, setYKapamaFilter] = useState({});
 
-  function getUniqueValues(arr, key) {
-    return Array.from(new Set(arr.map(item => item[key]).filter(Boolean)));
-  }
+  // Production form state
+  const [productionForm, setProductionForm] = useState({
+    tarih: getToday(),
+    vardiya: '',
+    hatNo: '',
+    tezgahNo: '',
+    operator: '',
+    bolumSorumlusu: '',
+    urunKodu: '',
+    yapilanIslem: '',
+    uretimAdedi: '',
+    dokumHatasi: '',
+    operatorHatasi: '',
+    operasyonSuresi: '',
+    isBaslangic: '',
+    tezgahArizasi: 0,
+    tezgahAyari: 0,
+    elmasDegisimi: 0,
+    parcaBekleme: 0,
+    temizlik: 0,
+    isBitis: ''
+  });
 
-  // Rapor güncelleme fonksiyonu
-  const handleGunRaporuRefresh = () => {
-    // Ürün bazında verileri grupla
-    const productMap = new Map();
-    
-    // Üretim verilerini ekle
-    records.forEach(record => {
-      const key = record.productCode;
-      if (!productMap.has(key)) {
-        productMap.set(key, {
-          productCode: key,
-          uretimAdet: 0,
-          paketlemeAdet: 0,
-          errorTypeCount: 0,
-          dokumHatasiCount: 0
-        });
-      }
-      const product = productMap.get(key);
-      product.uretimAdet += parseInt(record.quantity) || 0;
-    });
-    
-    // Paketleme verilerini ekle
-    packRecords.forEach(record => {
-      const key = record.productCode;
-      if (!productMap.has(key)) {
-        productMap.set(key, {
-          productCode: key,
-          uretimAdet: 0,
-          paketlemeAdet: 0,
-          errorTypeCount: 0,
-          dokumHatasiCount: 0
-        });
-      }
-      const product = productMap.get(key);
-      product.paketlemeAdet += parseInt(record.quantity) || 0;
-    });
-    
-    // Fire verilerini ekle
-    fireRecords.forEach(record => {
-      const key = record.productCode;
-      if (!productMap.has(key)) {
-        productMap.set(key, {
-          productCode: key,
-          uretimAdet: 0,
-          paketlemeAdet: 0,
-          errorTypeCount: 0,
-          dokumHatasiCount: 0
-        });
-      }
-      const product = productMap.get(key);
-      product.errorTypeCount += parseInt(record.quantity) || 0;
+  const [productionRecords, setProductionRecords] = useState([]);
+
+  // Timer states
+  const [timers, setTimers] = useState({
+    tezgahArizasi: { running: false, seconds: 0 },
+    tezgahAyari: { running: false, seconds: 0 },
+    elmasDegisimi: { running: false, seconds: 0 },
+    parcaBekleme: { running: false, seconds: 0 },
+    temizlik: { running: false, seconds: 0 }
+  });
+
+  const [intervals, setIntervals] = useState({});
+
+  const startTimer = (timerName) => {
+    if (!timers[timerName].running) {
+      const intervalId = setInterval(() => {
+        setTimers(prev => ({
+          ...prev,
+          [timerName]: {
+            running: true,
+            seconds: prev[timerName].seconds + 1
+          }
+        }));
+      }, 1000);
       
-      // Dokum hatası sayısını ayrıca say
-      if (record.errorType === 'Dokum Hatası') {
-        product.dokumHatasiCount += parseInt(record.quantity) || 0;
-      }
-    });
+      setIntervals(prev => ({ ...prev, [timerName]: intervalId }));
+      setTimers(prev => ({
+        ...prev,
+        [timerName]: { ...prev[timerName], running: true }
+      }));
+    }
+  };
+
+  const pauseTimer = (timerName) => {
+    if (timers[timerName].running && intervals[timerName]) {
+      clearInterval(intervals[timerName]);
+      setTimers(prev => ({
+        ...prev,
+        [timerName]: { ...prev[timerName], running: false }
+      }));
+    }
+  };
+
+  const stopTimer = (timerName) => {
+    if (intervals[timerName]) {
+      clearInterval(intervals[timerName]);
+    }
+    setProductionForm(prev => ({
+      ...prev,
+      [timerName]: timers[timerName].seconds
+    }));
+    setTimers(prev => ({
+      ...prev,
+      [timerName]: { running: false, seconds: 0 }
+    }));
+  };
+
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleProductionChange = (e) => {
+    setProductionForm({ ...productionForm, [e.target.name]: e.target.value });
+  };
+
+  const handleProductionSubmit = async (e) => {
+    e.preventDefault();
     
-    // Map'i array'e çevir
-    const raporData = Array.from(productMap.values());
-    setGunRaporu(raporData);
-  };
-  
-  // Y Kapama güncelleme fonksiyonu (gelecekte kullanılacak)
-  const handleYKapamaRefresh = () => {
-    // Şimdilik boş, gelecekte Y kapama verilerini ekleyebiliriz
+    // Clear any running timers
+    Object.keys(intervals).forEach(key => {
+      if (intervals[key]) clearInterval(intervals[key]);
+    });
+
+    try {
+      // Send data as JSON
+      const data = {
+        tarih: productionForm.tarih,
+        vardiya: productionForm.vardiya,
+        hatNo: productionForm.hatNo,
+        tezgahNo: productionForm.tezgahNo,
+        operator: productionForm.operator,
+        bolumSorumlusu: productionForm.bolumSorumlusu,
+        urunKodu: productionForm.urunKodu,
+        yapilanIslem: productionForm.yapilanIslem,
+        uretimAdedi: productionForm.uretimAdedi,
+        dokumHatasi: productionForm.dokumHatasi || '0',
+        operatorHatasi: productionForm.operatorHatasi || '0',
+        tezgahArizasi: productionForm.tezgahArizasi || '0',
+        tezgahAyari: productionForm.tezgahAyari || '0',
+        elmasDegisimi: productionForm.elmasDegisimi || '0',
+        parcaBekleme: productionForm.parcaBekleme || '0',
+        temizlik: productionForm.temizlik || '0',
+        isBaslangic: productionForm.isBaslangic || '',
+        isBitis: productionForm.isBitis || ''
+      };
+
+      const response = await fetch('https://script.google.com/macros/s/AKfycbww09-DcNJKE_AyIui2JxneYeiJ_AEroxn3pJLtk9jx/dev', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      // Add to local records regardless of Google Sheets response
+      setProductionRecords([...productionRecords, productionForm]);
+      
+      // Reset form
+      setProductionForm({
+        tarih: getToday(),
+        vardiya: '',
+        hatNo: '',
+        tezgahNo: '',
+        operator: '',
+        bolumSorumlusu: '',
+        urunKodu: '',
+        yapilanIslem: '',
+        uretimAdedi: '',
+        dokumHatasi: '',
+        operatorHatasi: '',
+        operasyonSuresi: '',
+        isBaslangic: '',
+        tezgahArizasi: 0,
+        tezgahAyari: 0,
+        elmasDegisimi: 0,
+        parcaBekleme: 0,
+        temizlik: 0,
+        isBitis: ''
+      });
+      setTimers({
+        tezgahArizasi: { running: false, seconds: 0 },
+        tezgahAyari: { running: false, seconds: 0 },
+        elmasDegisimi: { running: false, seconds: 0 },
+        parcaBekleme: { running: false, seconds: 0 },
+        temizlik: { running: false, seconds: 0 }
+      });
+      setIntervals({});
+
+      if (result.status === 'success') {
+        alert('Veri başarıyla kaydedildi!');
+      } else if (result.status === 'error') {
+        alert('Google Sheets hatası:\n\n' + result.message);
+      } else {
+        alert('Veri kaydedildi!\n\nTam yanıt:\n' + JSON.stringify(result, null, 2));
+      }
+      
+    } catch (error) {
+      // Still save locally and reset form even if Google Sheets fails
+      setProductionRecords([...productionRecords, productionForm]);
+      
+      setProductionForm({
+        tarih: getToday(),
+        vardiya: '',
+        hatNo: '',
+        tezgahNo: '',
+        operator: '',
+        bolumSorumlusu: '',
+        urunKodu: '',
+        yapilanIslem: '',
+        uretimAdedi: '',
+        dokumHatasi: '',
+        operatorHatasi: '',
+        operasyonSuresi: '',
+        isBaslangic: '',
+        tezgahArizasi: 0,
+        tezgahAyari: 0,
+        elmasDegisimi: 0,
+        parcaBekleme: 0,
+        temizlik: 0,
+        isBitis: ''
+      });
+      setTimers({
+        tezgahArizasi: { running: false, seconds: 0 },
+        tezgahAyari: { running: false, seconds: 0 },
+        elmasDegisimi: { running: false, seconds: 0 },
+        parcaBekleme: { running: false, seconds: 0 },
+        temizlik: { running: false, seconds: 0 }
+      });
+      setIntervals({});
+      
+      alert('Veri yerel olarak kaydedildi. Google Sheets hatası: ' + error.message);
+    }
   };
 
-  return (
-    <div className="section" style={{ minHeight: '100vh', background: 'var(--background-light)' }}>
-      <div style={{
-        background: 'var(--bg-light)',
-        color: 'var(--text-light)',
-        border: '1px solid var(--border-light)',
-        borderRadius: '8px',
-        padding: '1rem 1.5rem',
-        margin: '2rem auto',
-        fontSize: '1.05rem',
-        maxWidth: '600px'
+  // If not logged in, show login screen
+  if (!isLoggedIn) {
+    return (
+      <div className="section" style={{ 
+        minHeight: '100vh', 
+        background: 'var(--background-light)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
-        <strong>Not:</strong> Bu sayfa, <b>Üretim Takip Otomasyonu</b> projesinin bir prototipidir. <a href="https://github.com/arifkrc/TakipUI" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--link)', textDecoration: 'underline', fontWeight: 500 }}>Ana projeye göz atmak için tıklayın</a>.
-      </div>
-      <div className="container" style={{ maxWidth: 1400, margin: '0 auto', padding: '2rem 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h2 style={{ color: 'var(--primary-color)', textAlign: 'center' }}>Takip Formları</h2>
-          <button
-            type="button"
-            style={{ background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 16px rgba(59,130,246,0.10)' }}
-            onClick={() => {
-              downloadCSV(records, ['date','shift','operator','employee','foreman','process','productCode','quantity','pause_baslangic','pause_bitis','pause_dokum','pause_ayar','pause_ariza','pause_elmas','pause_temizlik','pause_mola','pause_operasyon'], 'uretim_listesi.csv');
-              // Gelecekte kullanılacak
-              // downloadCSV(packRecords, ['date','productCode','quantity'], 'paketleme_listesi.csv');
-              // downloadCSV(fireRecords, ['date','productCode','quantity','errorType'], 'fire_listesi.csv');
-              // downloadCSV(gunRaporu, ['productCode','uretimAdet','paketlemeAdet','errorTypeCount','dokumHatasiCount'], 'gun_raporu.csv');
-              // downloadCSV(yKapamaVeri, ['date','shift','productCode','operator','process','quantity'], 'y_kapama_listesi.csv');
-            }}
-          >Bütün Listeleri İndir</button>
-        </div>
-        
-        {/* Sekmeler */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem', gap: '1rem' }}>
-          <button onClick={() => setActiveTab('uretim')} style={{
-            padding: '10px 32px',
-            borderRadius: '8px',
-            border: 'none',
-            background: activeTab === 'uretim' ? 'var(--secondary-color)' : '#e5e7eb',
-            color: activeTab === 'uretim' ? 'white' : 'var(--primary-color)',
-            fontWeight: 600,
-            fontSize: '1rem',
-            cursor: 'pointer',
-            boxShadow: activeTab === 'uretim' ? '0 4px 16px rgba(59,130,246,0.10)' : 'none',
-            transition: 'all 0.2s'
-          }}>Üretim</button>
-          <button onClick={() => setActiveTab('paketleme')} style={{
-            padding: '10px 32px',
-            borderRadius: '8px',
-            border: 'none',
-            background: activeTab === 'paketleme' ? 'var(--secondary-color)' : '#e5e7eb',
-            color: activeTab === 'paketleme' ? 'white' : 'var(--primary-color)',
-            fontWeight: 600,
-            fontSize: '1rem',
-            cursor: 'pointer',
-            boxShadow: activeTab === 'paketleme' ? '0 4px 16px rgba(59,130,246,0.10)' : 'none',
-            transition: 'all 0.2s'
-          }}>Paketleme</button>
-          <button onClick={() => setActiveTab('fire')} style={{
-            padding: '10px 32px',
-            borderRadius: '8px',
-            border: 'none',
-            background: activeTab === 'fire' ? 'var(--secondary-color)' : '#e5e7eb',
-            color: activeTab === 'fire' ? 'white' : 'var(--primary-color)',
-            fontWeight: 600,
-            fontSize: '1rem',
-            cursor: 'pointer',
-            boxShadow: activeTab === 'fire' ? '0 4px 16px rgba(59,130,246,0.10)' : 'none',
-            transition: 'all 0.2s'
-          }}>Fire</button>
-          <button onClick={() => setActiveTab('rapor')} style={{
-            padding: '10px 32px',
-            borderRadius: '8px',
-            border: 'none',
-            background: activeTab === 'rapor' ? 'var(--secondary-color)' : '#e5e7eb',
-            color: activeTab === 'rapor' ? 'white' : 'var(--primary-color)',
-            fontWeight: 600,
-            fontSize: '1rem',
-            cursor: 'pointer',
-            boxShadow: activeTab === 'rapor' ? '0 4px 16px rgba(59,130,246,0.10)' : 'none',
-            transition: 'all 0.2s'
-          }}>Gün Raporu</button>
-          <button onClick={() => setActiveTab('ykapama')} style={{
-            padding: '10px 32px',
-            borderRadius: '8px',
-            border: 'none',
-            background: activeTab === 'ykapama' ? 'var(--secondary-color)' : '#e5e7eb',
-            color: activeTab === 'ykapama' ? 'white' : 'var(--primary-color)',
-            fontWeight: 600,
-            fontSize: '1rem',
-            cursor: 'pointer',
-            boxShadow: activeTab === 'ykapama' ? '0 4px 16px rgba(59,130,246,0.10)' : 'none',
-            transition: 'all 0.2s'
-          }}>Y Kapama Listesi</button>
-        </div>
-
-        {/* Üretim Sekmesi */}
-        {activeTab === 'uretim' && (
-          <>
-            {/* Form üstte yatay */}
-            <div style={{
-              background: 'white',
-              borderRadius: 20,
-              boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-              padding: '2.5rem',
-              marginBottom: '2rem',
-              maxWidth: '1400px',
-              margin: '0 auto 2rem auto',
-              border: '1px solid #f3f4f6'
-            }}>
-              <form onSubmit={handleSubmit} style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '2rem'
+        <div style={{
+          background: 'white',
+          borderRadius: '20px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+          padding: '3rem',
+          width: '100%',
+          maxWidth: '400px',
+          border: '1px solid var(--border-color)'
+        }}>
+          <h2 style={{ 
+            color: 'var(--primary-color)', 
+            textAlign: 'center', 
+            marginBottom: '2rem',
+            fontSize: '1.75rem',
+            fontWeight: 700
+          }}>Giriş Yap</h2>
+          
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+              <label htmlFor="username" style={{ 
+                fontWeight: 600, 
+                fontSize: '0.95rem', 
+                color: 'var(--text-dark)', 
+                marginBottom: '0.5rem', 
+                display: 'block' 
               }}>
-                {/* İlk satır - Temel bilgiler */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '1.5rem' }}>
-                  <div>
-                     <label htmlFor="date" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Tarih</label>
-                     <input type="date" id="date" name="date" value={form.date} onChange={handleChange} style={{
-                       width: '100%',
-                       padding: '12px 16px',
-                       borderRadius: '8px',
-                       border: '1px solid #e1e5e9',
-                       fontSize: '0.95rem',
-                       marginTop: '0.5rem',
-                       background: '#ffffff',
-                       transition: 'all 0.2s ease',
-                       boxSizing: 'border-box'
-                     }} />
-                  </div>
-                  <div>
-                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-                       <span style={{ color: '#374151', fontWeight: 500, fontSize: '0.9rem' }}>
-                         Vardiya: {form.shift ? form.shift : '-'}
-                       </span>
-                       <span style={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.85rem' }}>
-                         {shiftMap[form.shift] ? `(${shiftMap[form.shift]})` : ''}
-                      </span>
-                    </div>
-                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
-                       <input type="time" name="pause_baslangic" value={form.pause_baslangic || ''} onChange={handleChange} style={{
-                         width: '100%',
-                         padding: '8px 12px',
-                         borderRadius: '6px',
-                         border: '1px solid #e1e5e9',
-                         fontSize: '0.85rem',
-                         background: '#ffffff',
-                         transition: 'all 0.2s ease',
-                         boxSizing: 'border-box'
-                       }} step="60" placeholder="Başlangıç" />
-                       <input type="time" name="pause_bitis" value={form.pause_bitis || ''} onChange={handleChange} style={{
-                         width: '100%',
-                         padding: '8px 12px',
-                         borderRadius: '6px',
-                         border: '1px solid #e1e5e9',
-                         fontSize: '0.85rem',
-                         background: '#ffffff',
-                         transition: 'all 0.2s ease',
-                         boxSizing: 'border-box'
-                       }} step="60" placeholder="Bitiş" />
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="operator" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Operatör</label>
-                    <input type="text" id="operator" name="operator" value={form.operator} onChange={handleChange} style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid #e1e5e9',
-                      fontSize: '0.95rem',
-                      marginTop: '0.5rem',
-                      background: '#ffffff',
-                      transition: 'all 0.2s ease',
-                      boxSizing: 'border-box'
-                    }} placeholder="Operatör adı (opsiyonel)" />
-                  </div>
-                  <div>
-                    <label htmlFor="employee" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Çalışan Adı</label>
-                    <input type="text" id="employee" name="employee" value={form.employee} onChange={handleChange} style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid #e1e5e9',
-                      fontSize: '0.95rem',
-                      marginTop: '0.5rem',
-                      background: '#ffffff',
-                      transition: 'all 0.2s ease',
-                      boxSizing: 'border-box'
-                    }} placeholder="Çalışan adı (opsiyonel)" />
-                  </div>
-                  <div>
-                    <label htmlFor="foreman" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Ustabaşı Adı</label>
-                    <select id="foreman" name="foreman" value={form.foreman} onChange={handleChange} style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid #e1e5e9',
-                      fontSize: '0.95rem',
-                      marginTop: '0.5rem',
-                      background: '#ffffff',
-                      transition: 'all 0.2s ease',
-                      boxSizing: 'border-box'
-                    }}>
-                      <option value="">Seçiniz</option>
-                      {foremanOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="process" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Yapılan İşlem</label>
-                    <select id="process" name="process" value={form.process} onChange={handleChange} style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid #e1e5e9',
-                      fontSize: '0.95rem',
-                      marginTop: '0.5rem',
-                      background: '#ffffff',
-                      transition: 'all 0.2s ease',
-                      boxSizing: 'border-box'
-                    }}>
-                      <option value="">Seçiniz</option>
-                      {processOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                  </div>
-                </div>
-                
-                                                                   {/* İkinci satır - Ürün bilgileri */}
-                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-                  <div>
-                       <label htmlFor="productCode" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Ürün Kodu</label>
-                       <input type="text" id="productCode" name="productCode" value={form.productCode} onChange={handleChange} style={{
-                         width: '100%',
-                         padding: '12px 16px',
-                         borderRadius: '8px',
-                         border: '1px solid #e1e5e9',
-                         fontSize: '0.95rem',
-                         marginTop: '0.5rem',
-                         background: '#ffffff',
-                         transition: 'all 0.2s ease',
-                         boxSizing: 'border-box'
-                       }} placeholder="Ürün kodu" />
-                  </div>
-                  <div>
-                       <label htmlFor="hatNo" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Hat No</label>
-                       <input type="text" id="hatNo" name="hatNo" value={form.hatNo} onChange={handleChange} style={{
-                         width: '100%',
-                         padding: '12px 16px',
-                         borderRadius: '8px',
-                         border: '1px solid #e1e5e9',
-                         fontSize: '0.95rem',
-                         marginTop: '0.5rem',
-                         background: '#ffffff',
-                         transition: 'all 0.2s ease',
-                         boxSizing: 'border-box'
-                       }} placeholder="Hat numarası" />
-                  </div>
-                  <div>
-                       <label htmlFor="quantity" style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.25rem', display: 'block' }}>Üretim Adedi</label>
-                       <input type="number" id="quantity" name="quantity" value={form.quantity} onChange={handleChange} min={0} style={{
-                         width: '100%',
-                         padding: '12px 16px',
-                         borderRadius: '8px',
-                         border: '1px solid #e1e5e9',
-                         fontSize: '0.95rem',
-                         marginTop: '0.5rem',
-                         background: '#ffffff',
-                         transition: 'all 0.2s ease',
-                         boxSizing: 'border-box'
-                       }} placeholder="0" />
-                  </div>
-                </div>
-
-                {/* Üçüncü satır - Duraksamalar */}
-                <div>
-                  <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '1rem', display: 'block' }}>Duraksamalar (dk)</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '1rem' }}>
-                    <div>
-                      <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500, display: 'block', marginBottom: '0.5rem' }}>Dokum Hatası</span>
-                      <input type="number" name="pause_dokum" value={form.pause_dokum || ''} onChange={e => setForm({ ...form, pause_dokum: e.target.value })} min={0} style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid #e1e5e9',
-                        fontSize: '0.95rem',
-                        background: '#ffffff',
-                        transition: 'all 0.2s ease',
-                        boxSizing: 'border-box'
-                      }} placeholder="0" />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500, display: 'block', marginBottom: '0.5rem' }}>Tezgah Ayarı</span>
-                      <input type="number" name="pause_ayar" value={form.pause_ayar || ''} onChange={e => setForm({ ...form, pause_ayar: e.target.value })} min={0} style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid #e1e5e9',
-                        fontSize: '0.95rem',
-                        background: '#ffffff',
-                        transition: 'all 0.2s ease',
-                        boxSizing: 'border-box'
-                      }} placeholder="0" />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500, display: 'block', marginBottom: '0.5rem' }}>Tezgah Arızası</span>
-                      <input type="number" name="pause_ariza" value={form.pause_ariza || ''} onChange={e => setForm({ ...form, pause_ariza: e.target.value })} min={0} style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid #e1e5e9',
-                        fontSize: '0.95rem',
-                        background: '#ffffff',
-                        transition: 'all 0.2s ease',
-                        boxSizing: 'border-box'
-                      }} placeholder="0" />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500, display: 'block', marginBottom: '0.5rem' }}>Elmas Değişimi</span>
-                      <input type="number" name="pause_elmas" value={form.pause_elmas || ''} onChange={e => setForm({ ...form, pause_elmas: e.target.value })} min={0} style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid #e1e5e9',
-                        fontSize: '0.95rem',
-                        background: '#ffffff',
-                        transition: 'all 0.2s ease',
-                        boxSizing: 'border-box'
-                      }} placeholder="0" />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500, display: 'block', marginBottom: '0.5rem' }}>Temizlik</span>
-                      <input type="number" name="pause_temizlik" value={form.pause_temizlik || 15} onChange={e => setForm({ ...form, pause_temizlik: e.target.value })} min={0} style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid #e1e5e9',
-                        fontSize: '0.95rem',
-                        background: '#ffffff',
-                        transition: 'all 0.2s ease',
-                        boxSizing: 'border-box'
-                      }} placeholder="15" />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500, display: 'block', marginBottom: '0.5rem' }}>Mola</span>
-                      <input type="number" name="pause_mola" value={form.pause_mola || 30} onChange={e => setForm({ ...form, pause_mola: e.target.value })} min={0} style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid #e1e5e9',
-                        fontSize: '0.95rem',
-                        background: '#ffffff',
-                        transition: 'all 0.2s ease',
-                        boxSizing: 'border-box'
-                      }} placeholder="30" />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500, display: 'block', marginBottom: '0.5rem' }}>Operasyon Süresi</span>
-                      <input type="number" name="pause_operasyon" value={form.pause_operasyon || ''} onChange={e => setForm({ ...form, pause_operasyon: e.target.value })} min={0} style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid #e1e5e9',
-                        fontSize: '0.95rem',
-                        background: '#ffffff',
-                        transition: 'all 0.2s ease',
-                        boxSizing: 'border-box'
-                      }} placeholder="0" />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'end' }}>
-                <button type="submit" style={{
-                  background: 'var(--secondary-color)',
-                  color: 'white',
-                  fontWeight: 600,
-                        fontSize: '1rem',
-                  border: 'none',
-                        borderRadius: '12px',
-                        padding: '14px 24px',
-                  cursor: 'pointer',
-                        boxShadow: '0 4px 16px rgba(59,130,246,0.15)',
-                        transition: 'all 0.2s ease',
-                        width: '100%',
-                        height: '48px'
-                }}>Ekle</button>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            {/* Liste aşağıda */}
-            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ color: 'var(--primary-color)', margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Üretim Kayıtları</h3>
-                <button type="button" style={{ 
-                  background: 'var(--secondary-color)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  padding: '8px 20px', 
-                  fontWeight: 500, 
-                  cursor: 'pointer', 
-                  fontSize: '0.95rem', 
-                  boxShadow: '0 2px 8px rgba(59,130,246,0.15)',
-                  transition: 'all 0.2s ease'
+                Kullanıcı Adı
+              </label>
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)',
+                  fontSize: '1rem',
+                  background: 'var(--background-light)',
+                  color: 'var(--text-dark)',
+                  transition: 'all 0.2s ease',
+                  boxSizing: 'border-box'
                 }}
-                    onClick={() => downloadCSV(records, ['date','shift','operator','employee','foreman','process','productCode','hatNo','quantity','pause_baslangic','pause_bitis','pause_dokum','pause_ayar','pause_ariza','pause_elmas','pause_temizlik','pause_mola','pause_operasyon'], 'uretim_listesi.csv')}>CSV olarak indir</button>
-                </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-                <button onClick={() => setUretimFilter({})} style={{ 
-                  padding: '6px 16px', 
-                  borderRadius: '6px', 
-                  background: '#f3f4f6', 
-                  border: '1px solid #e5e7eb', 
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                  fontSize: '0.9rem',
-                  transition: 'all 0.2s ease'
-                }}>Filtreyi Sıfırla</button>
-                </div>
-                <table
-                  id="excel-table"
-                  style={{
-                    width: '100%',
-                    background: 'white',
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    overflow: 'hidden',
-                    fontSize: '0.95rem',
-                    userSelect: 'none',
-                  cursor: 'pointer',
-                  border: '1px solid #f3f4f6'
-                  }}
-                >
-                  <thead style={{ background: 'var(--background-light)' }}>
-                    <tr>
-                    <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Tarih</th>
-                    <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Vardiya</th>
-                    <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Operatör</th>
-                    <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Çalışan</th>
-                    <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Ustabaşı</th>
-                    <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>İşlem</th>
-                    <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Ürün Kodu</th>
-                    <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Hat No</th>
-                    <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Adet</th>
-                                         <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>DH</th>
-                     <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>TA</th>
-                     <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>TAr</th>
-                     <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>ED</th>
-                     <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>T</th>
-                     <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>M</th>
-                     <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>OS</th>
-                                         <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Başlangıç</th>
-                     <th style={{ padding: '8px 6px', background: 'var(--background-light)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid #eee' }}>Bitiş</th>
-                    </tr>
-                    <tr>
-                      <th>
-                      <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.date || ''} onChange={e => setUretimFilter(f => ({ ...f, date: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                          {getUniqueValues(records, 'date').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.shift || ''} onChange={e => setUretimFilter(f => ({ ...f, shift: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'shift').map((v, i) => <option key={i} value={v}>{shiftMap[v] || v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                      <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.operator || ''} onChange={e => setUretimFilter(f => ({ ...f, operator: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                          {getUniqueValues(records, 'operator').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                      <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.employee || ''} onChange={e => setUretimFilter(f => ({ ...f, employee: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                          {getUniqueValues(records, 'employee').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                      <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.foreman || ''} onChange={e => setUretimFilter(f => ({ ...f, foreman: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                          {getUniqueValues(records, 'foreman').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                      <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.process || ''} onChange={e => setUretimFilter(f => ({ ...f, process: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                          {getUniqueValues(records, 'process').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                      <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.productCode || ''} onChange={e => setUretimFilter(f => ({ ...f, productCode: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                          {getUniqueValues(records, 'productCode').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                      <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.hatNo || ''} onChange={e => setUretimFilter(f => ({ ...f, hatNo: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                          {getUniqueValues(records, 'hatNo').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                      <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.quantity || ''} onChange={e => setUretimFilter(f => ({ ...f, quantity: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                          {getUniqueValues(records, 'quantity').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.pause_dokum || ''} onChange={e => setUretimFilter(f => ({ ...f, pause_dokum: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'pause_dokum').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                      <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.pause_ayar || ''} onChange={e => setUretimFilter(f => ({ ...f, pause_ayar: e.target.value }))}>
-                          <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'pause_ayar').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                       </select>
-                     </th>
-                     <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.pause_ariza || ''} onChange={e => setUretimFilter(f => ({ ...f, pause_ariza: e.target.value }))}>
-                         <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'pause_ariza').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                       </select>
-                     </th>
-                     <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.pause_elmas || ''} onChange={e => setUretimFilter(f => ({ ...f, pause_elmas: e.target.value }))}>
-                         <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'pause_elmas').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                       </select>
-                     </th>
-                     <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.pause_temizlik || ''} onChange={e => setUretimFilter(f => ({ ...f, pause_temizlik: e.target.value }))}>
-                         <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'pause_temizlik').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                       </select>
-                     </th>
-                     <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.pause_mola || ''} onChange={e => setUretimFilter(f => ({ ...f, pause_mola: e.target.value }))}>
-                         <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'pause_mola').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                       </select>
-                     </th>
-                     <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.pause_operasyon || ''} onChange={e => setUretimFilter(f => ({ ...f, pause_operasyon: e.target.value }))}>
-                         <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'pause_operasyon').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                       </select>
-                     </th>
-                                         <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.pause_baslangic || ''} onChange={e => setUretimFilter(f => ({ ...f, pause_baslangic: e.target.value }))}>
-                         <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'pause_baslangic').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                       </select>
-                     </th>
-                     <th>
-                       <select style={{ width: '90%', padding: '6px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }} value={uretimFilter.pause_bitis || ''} onChange={e => setUretimFilter(f => ({ ...f, pause_bitis: e.target.value }))}>
-                         <option value=''>Tümü</option>
-                         {getUniqueValues(records, 'pause_bitis').map((v, i) => <option key={i} value={v}>{v}</option>)}
-                        </select>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {records.filter(rec =>
-                      (!uretimFilter.date || rec.date === uretimFilter.date) &&
-                      (!uretimFilter.shift || rec.shift === uretimFilter.shift) &&
-                      (!uretimFilter.operator || rec.operator === uretimFilter.operator) &&
-                      (!uretimFilter.employee || rec.employee === uretimFilter.employee) &&
-                      (!uretimFilter.foreman || rec.foreman === uretimFilter.foreman) &&
-                      (!uretimFilter.process || rec.process === uretimFilter.process) &&
-                      (!uretimFilter.productCode || rec.productCode === uretimFilter.productCode) &&
-                      (!uretimFilter.quantity || String(rec.quantity) === String(uretimFilter.quantity)) &&
-                    (!uretimFilter.pause_dokum || rec.pause_dokum === uretimFilter.pause_dokum) &&
-                    (!uretimFilter.pause_ayar || rec.pause_ayar === uretimFilter.pause_ayar) &&
-                    (!uretimFilter.pause_ariza || rec.pause_ariza === uretimFilter.pause_ariza) &&
-                    (!uretimFilter.pause_elmas || rec.pause_elmas === uretimFilter.pause_elmas) &&
-                    (!uretimFilter.pause_temizlik || rec.pause_temizlik === uretimFilter.pause_temizlik) &&
-                    (!uretimFilter.pause_mola || rec.pause_mola === uretimFilter.pause_mola) &&
-                                         (!uretimFilter.pause_operasyon || rec.pause_operasyon === uretimFilter.pause_operasyon) &&
-                     (!uretimFilter.pause_baslangic || rec.pause_baslangic === uretimFilter.pause_baslangic) &&
-                     (!uretimFilter.pause_bitis || rec.pause_bitis === uretimFilter.pause_bitis)
-                    ).length === 0 ? (
-                                         <tr><td colSpan={18} style={{ textAlign: 'center', color: '#9ca3af', padding: '24px', fontSize: '1rem' }}>Kayıt yok</td></tr>
-                    ) : (
-                      records.filter(rec =>
-                        (!uretimFilter.date || rec.date === uretimFilter.date) &&
-                        (!uretimFilter.shift || rec.shift === uretimFilter.shift) &&
-                        (!uretimFilter.operator || rec.operator === uretimFilter.operator) &&
-                        (!uretimFilter.employee || rec.employee === uretimFilter.employee) &&
-                        (!uretimFilter.foreman || rec.foreman === uretimFilter.foreman) &&
-                        (!uretimFilter.process || rec.process === uretimFilter.process) &&
-                        (!uretimFilter.productCode || rec.productCode === uretimFilter.productCode) &&
-                        (!uretimFilter.hatNo || rec.hatNo === uretimFilter.hatNo) &&
-                        (!uretimFilter.quantity || String(rec.quantity) === String(uretimFilter.quantity)) &&
-                      (!uretimFilter.pause_dokum || rec.pause_dokum === uretimFilter.pause_dokum) &&
-                      (!uretimFilter.pause_ayar || rec.pause_ayar === uretimFilter.pause_ayar) &&
-                      (!uretimFilter.pause_ariza || rec.pause_ariza === uretimFilter.pause_ariza) &&
-                      (!uretimFilter.pause_elmas || rec.pause_elmas === uretimFilter.pause_elmas) &&
-                      (!uretimFilter.pause_temizlik || rec.pause_temizlik === uretimFilter.pause_temizlik) &&
-                      (!uretimFilter.pause_mola || rec.pause_mola === uretimFilter.pause_mola) &&
-                      (!uretimFilter.pause_operasyon || rec.pause_operasyon === uretimFilter.pause_operasyon) &&
-                      (!uretimFilter.pause_baslangic || rec.pause_baslangic === uretimFilter.pause_baslangic) &&
-                      (!uretimFilter.pause_bitis || rec.pause_bitis === uretimFilter.pause_bitis)
-                      ).map((rec, rowIdx) => (
-                                             <tr key={rowIdx} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.date}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{shiftMap[rec.shift] || rec.shift}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.operator}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.employee}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.foreman}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.process}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.productCode}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.hatNo}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.quantity}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.pause_dokum || '-'}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.pause_ayar || '-'}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.pause_ariza || '-'}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.pause_elmas || '-'}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.pause_temizlik || '-'}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.pause_mola || '-'}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.pause_operasyon || '-'}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.pause_baslangic || '-'}</td>
-                         <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.pause_bitis || '-'}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                placeholder="Kullanıcı adınızı girin"
+                required
+              />
             </div>
-          </>
-        )}
 
-        {/* Paketleme Sekmesi */}
-        {activeTab === 'paketleme' && (
-          <>
-            {/* Form üstte */}
-            <div style={{
-              background: 'var(--background-gray)',
-              borderRadius: 20,
-              boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-              padding: '2.5rem',
-              marginBottom: '2rem',
-              maxWidth: '1400px',
-              margin: '0 auto 2rem auto',
-              border: '1px solid var(--border-color)'
-            }}>
-              <form onSubmit={handlePackSubmit} style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '1.5rem'
+            <div>
+              <label htmlFor="password" style={{ 
+                fontWeight: 600, 
+                fontSize: '0.95rem', 
+                color: 'var(--text-dark)', 
+                marginBottom: '0.5rem', 
+                display: 'block' 
               }}>
-                <div>
-                  <label htmlFor="packDate" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Tarih</label>
-                  <input type="date" id="packDate" name="date" value={packForm.date} onChange={handlePackChange} style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    fontSize: '0.95rem',
-                    marginTop: '0.5rem',
-                    background: 'var(--background-light)',
-                    color: 'var(--text-dark)',
-                    transition: 'all 0.2s ease',
-                    boxSizing: 'border-box'
-                  }} />
-                </div>
-                <div>
-                  <label htmlFor="packProductCode" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Ürün Kodu</label>
-                  <input type="text" id="packProductCode" name="productCode" value={packForm.productCode} onChange={handlePackChange} style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    fontSize: '0.95rem',
-                    marginTop: '0.5rem',
-                    background: 'var(--background-light)',
-                    color: 'var(--text-dark)',
-                    transition: 'all 0.2s ease',
-                    boxSizing: 'border-box'
-                  }} placeholder="Ürün kodu" />
-                </div>
-                <div>
-                  <label htmlFor="packQuantity" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Paketleme Adedi</label>
-                  <input type="number" id="packQuantity" name="quantity" value={packForm.quantity} onChange={handlePackChange} min={0} style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    fontSize: '0.95rem',
-                    marginTop: '0.5rem',
-                    background: 'var(--background-light)',
-                    color: 'var(--text-dark)',
-                    transition: 'all 0.2s ease',
-                    boxSizing: 'border-box'
-                  }} placeholder="0" />
-                </div>
-                <div style={{ gridColumn: 'span 3', display: 'flex', justifyContent: 'center' }}>
-              <button type="submit" style={{
+                Şifre
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)',
+                  fontSize: '1rem',
+                  background: 'var(--background-light)',
+                  color: 'var(--text-dark)',
+                  transition: 'all 0.2s ease',
+                  boxSizing: 'border-box'
+                }}
+                placeholder="Şifrenizi girin"
+                required
+              />
+            </div>
+
+            {loginError && (
+              <div style={{
+                padding: '12px',
+                background: '#fee2e2',
+                color: '#dc2626',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                textAlign: 'center',
+                fontWeight: 500
+              }}>
+                {loginError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              style={{
                 background: 'var(--secondary-color)',
                 color: 'white',
                 fontWeight: 600,
-                    fontSize: '1rem',
+                fontSize: '1rem',
                 border: 'none',
-                    borderRadius: '12px',
-                    padding: '14px 32px',
+                borderRadius: '12px',
+                padding: '14px 24px',
                 cursor: 'pointer',
-                    boxShadow: '0 4px 16px rgba(59,130,246,0.15)',
-                    transition: 'all 0.2s ease'
-                  }}>Paketleme Ekle</button>
-                </div>
-            </form>
-            </div>
+                boxShadow: '0 4px 16px rgba(59,130,246,0.2)',
+                transition: 'all 0.2s ease',
+                width: '100%'
+              }}
+            >
+              Giriş Yap
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
-            {/* Liste aşağıda */}
-            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ color: 'var(--primary-color)', margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Paketleme Kayıtları</h3>
-                <button type="button" style={{ 
-                  background: 'var(--secondary-color)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  padding: '8px 20px', 
-                  fontWeight: 500, 
-                  cursor: 'pointer', 
-                  fontSize: '0.95rem', 
-                  boxShadow: '0 2px 8px rgba(59,130,246,0.15)',
-                  transition: 'all 0.2s ease'
-                }}
-                onClick={() => downloadCSV(packRecords, ['date','productCode','quantity'], 'paketleme_listesi.csv')}>CSV olarak indir</button>
-              </div>
-              <table style={{
-                width: '100%',
-                background: 'var(--background-light)',
-                borderRadius: '16px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                overflow: 'hidden',
-                fontSize: '0.95rem',
-                border: '1px solid var(--border-color)'
-              }}>
-                <thead style={{ background: 'var(--background-gray)' }}>
-                  <tr>
-                    <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Tarih</th>
-                    <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Ürün Kodu</th>
-                    <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Paketleme Adedi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {packRecords.length === 0 ? (
-                    <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-light)', padding: '24px', fontSize: '1rem' }}>Kayıt yok</td></tr>
-                  ) : (
-                    packRecords.map((rec, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.date}</td>
-                        <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.productCode}</td>
-                        <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.quantity}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+  // Logged in - show production form
+  return (
+    <div className="section" style={{ minHeight: '100vh', background: 'var(--background-light)', padding: '1rem 0' }}>
+      <div className="container" style={{ maxWidth: 1400, margin: '0 auto', padding: '0 1rem' }}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+          justifyContent: 'space-between', 
+          alignItems: window.innerWidth <= 768 ? 'stretch' : 'center', 
+          marginBottom: '1.5rem',
+          gap: '1rem'
+        }}>
+          <h2 style={{ color: 'var(--primary-color)', margin: 0, fontSize: window.innerWidth <= 768 ? '1.25rem' : '1.5rem' }}>Üretim Takip Formu</h2>
+          <button
+            onClick={() => setIsLoggedIn(false)}
+            style={{
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '10px 24px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(239,68,68,0.2)',
+              width: window.innerWidth <= 768 ? '100%' : 'auto'
+            }}
+          >
+            Çıkış Yap
+          </button>
+        </div>
 
-        {/* Fire Sekmesi */}
-        {activeTab === 'fire' && (
-          <>
-            {/* Form üstte */}
-            <div style={{
-              background: 'var(--background-gray)',
-              borderRadius: 20,
-              boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-              padding: '2.5rem',
-              marginBottom: '2rem',
-              maxWidth: '1400px',
-              margin: '0 auto 2rem auto',
-              border: '1px solid var(--border-color)'
+        {/* Form */}
+        <div style={{
+          background: 'white',
+          borderRadius: window.innerWidth <= 768 ? 12 : 20,
+          boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+          padding: window.innerWidth <= 768 ? '1.5rem' : '2.5rem',
+          marginBottom: '2rem',
+          border: '1px solid #f3f4f6'
+        }}>
+          <form onSubmit={handleProductionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: window.innerWidth <= 768 ? '1.5rem' : '2rem' }}>
+            {/* First Row - TARİH */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : 'repeat(4, 1fr)', 
+              gap: window.innerWidth <= 768 ? '1rem' : '1.5rem' 
             }}>
-              <form onSubmit={handleFireSubmit} style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '1.5rem'
-              }}>
-                <div>
-                  <label htmlFor="fireDate" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Tarih</label>
-                  <input type="date" id="fireDate" name="date" value={fireForm.date} onChange={handleFireChange} style={{
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                  TARİH
+                </label>
+                <input
+                  type="date"
+                  name="tarih"
+                  value={productionForm.tarih}
+                  onChange={handleProductionChange}
+                  required
+                  style={{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
+                    border: '1px solid #e1e5e9',
                     fontSize: '0.95rem',
-                    marginTop: '0.5rem',
-                    background: 'var(--background-light)',
-                    color: 'var(--text-dark)',
-                    transition: 'all 0.2s ease',
+                    background: '#ffffff',
                     boxSizing: 'border-box'
-                  }} />
-                </div>
+                  }}
+                />
+              </div>
+
+              {window.innerWidth > 768 && (
+                <>
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      VARD. NO
+                    </label>
+                    <select
+                      name="vardiya"
+                      value={productionForm.vardiya}
+                      onChange={handleProductionChange}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e1e5e9',
+                        fontSize: '0.95rem',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      <option value="">Seçiniz</option>
+                      <option value="00-08">00-08</option>
+                      <option value="08-16">08-16</option>
+                      <option value="16-00">16-00</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      HAT NO
+                    </label>
+                    <input
+                      type="text"
+                      name="hatNo"
+                      value={productionForm.hatNo}
+                      onChange={handleProductionChange}
+                      required
+                      maxLength="2"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e1e5e9',
+                        fontSize: '0.95rem',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="Hat numarası"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      TEZGAH NO
+                    </label>
+                    <input
+                      type="text"
+                      name="tezgahNo"
+                      value={productionForm.tezgahNo}
+                      onChange={handleProductionChange}
+                      required
+                      maxLength="2"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e1e5e9',
+                        fontSize: '0.95rem',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="Tezgah numarası"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Second Row - VARDIYA, HAT NO, TEZGAH NO (Mobile Only) */}
+            {window.innerWidth <= 768 && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px', gap: '0.75rem' }}>
                 <div>
-                  <label htmlFor="fireProductCode" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Ürün Kodu</label>
-                  <input type="text" id="fireProductCode" name="productCode" value={fireForm.productCode} onChange={handleFireChange} style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    fontSize: '0.95rem',
-                    marginTop: '0.5rem',
-                    background: 'var(--background-light)',
-                    color: 'var(--text-dark)',
-                    transition: 'all 0.2s ease',
-                    boxSizing: 'border-box'
-                  }} placeholder="Ürün kodu" />
-                </div>
-                <div>
-                  <label htmlFor="fireQuantity" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Fire Adedi</label>
-                  <input type="number" id="fireQuantity" name="quantity" value={fireForm.quantity} onChange={handleFireChange} min={0} style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    fontSize: '0.95rem',
-                    marginTop: '0.5rem',
-                    background: 'var(--background-light)',
-                    color: 'var(--text-dark)',
-                    transition: 'all 0.2s ease',
-                    boxSizing: 'border-box'
-                  }} placeholder="0" />
-                </div>
-                <div>
-                  <label htmlFor="fireErrorType" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-dark)', marginBottom: '0.25rem', display: 'block' }}>Hata Türü</label>
-                  <select id="fireErrorType" name="errorType" value={fireForm.errorType} onChange={handleFireChange} style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    fontSize: '0.95rem',
-                    marginTop: '0.5rem',
-                    background: 'var(--background-light)',
-                    color: 'var(--text-dark)',
-                    transition: 'all 0.2s ease',
-                    boxSizing: 'border-box'
-                  }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                    VARD. NO
+                  </label>
+                  <select
+                    name="vardiya"
+                    value={productionForm.vardiya}
+                    onChange={handleProductionChange}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid #e1e5e9',
+                      fontSize: '0.95rem',
+                      background: '#ffffff',
+                      boxSizing: 'border-box'
+                    }}
+                  >
                     <option value="">Seçiniz</option>
-                    <option value="Dokum Hatası">Dokum Hatası</option>
-                    <option value="Kalite Hatası">Kalite Hatası</option>
-                    <option value="Boyut Hatası">Boyut Hatası</option>
-                    <option value="Renk Hatası">Renk Hatası</option>
+                    <option value="00-08">00-08</option>
+                    <option value="08-16">08-16</option>
+                    <option value="16-00">16-00</option>
                   </select>
                 </div>
-                <div style={{ gridColumn: 'span 4', display: 'flex', justifyContent: 'center' }}>
-                  <button type="submit" style={{
-                    background: 'var(--secondary-color)',
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '14px 32px',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 16px rgba(59,130,246,0.15)',
-                    transition: 'all 0.2s ease'
-                  }}>Fire Ekle</button>
+
+                <div>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                    HAT NO
+                  </label>
+                  <input
+                    type="text"
+                    name="hatNo"
+                    value={productionForm.hatNo}
+                    onChange={handleProductionChange}
+                    required
+                    maxLength="2"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid #e1e5e9',
+                      fontSize: '0.95rem',
+                      background: '#ffffff',
+                      boxSizing: 'border-box',
+                      textAlign: 'center'
+                    }}
+                    placeholder="00"
+                  />
                 </div>
-              </form>
+
+                <div>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                    TEZG. NO
+                  </label>
+                  <input
+                    type="text"
+                    name="tezgahNo"
+                    value={productionForm.tezgahNo}
+                    onChange={handleProductionChange}
+                    required
+                    maxLength="2"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid #e1e5e9',
+                      fontSize: '0.95rem',
+                      background: '#ffffff',
+                      boxSizing: 'border-box',
+                      textAlign: 'center'
+                    }}
+                    placeholder="00"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Third Row - OPERATÖR */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : 'repeat(3, 1fr)', 
+              gap: window.innerWidth <= 768 ? '1rem' : '1.5rem' 
+            }}>
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                  OPERATÖR
+                </label>
+                <input
+                  type="text"
+                  name="operator"
+                  value={productionForm.operator}
+                  onChange={handleProductionChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #e1e5e9',
+                    fontSize: '0.95rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box'
+                  }}
+                  placeholder="Operatör adı"
+                />
+              </div>
+
+              {window.innerWidth > 768 && (
+                <>
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      BÖLÜM SORUMLUSU
+                    </label>
+                    <input
+                      type="text"
+                      name="bolumSorumlusu"
+                      value={productionForm.bolumSorumlusu}
+                      onChange={handleProductionChange}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e1e5e9',
+                        fontSize: '0.95rem',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="Bölüm sorumlusu"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      ÜRÜN KODU
+                    </label>
+                    <input
+                      type="text"
+                      name="urunKodu"
+                      value={productionForm.urunKodu}
+                      onChange={handleProductionChange}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e1e5e9',
+                        fontSize: '0.95rem',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="Ürün kodu"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Liste aşağıda */}
-            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ color: 'var(--primary-color)', margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Fire Kayıtları</h3>
-                <button type="button" style={{ 
-                  background: 'var(--secondary-color)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  padding: '8px 20px', 
-                  fontWeight: 500, 
-                  cursor: 'pointer', 
-                  fontSize: '0.95rem', 
-                  boxShadow: '0 2px 8px rgba(59,130,246,0.15)',
-                  transition: 'all 0.2s ease'
-                }}
-                  onClick={() => downloadCSV(fireRecords, ['date','productCode','quantity','errorType'], 'fire_listesi.csv')}>CSV olarak indir</button>
+            {/* Fourth Row - BÖLÜM SORUMLUSU (Mobile Only) */}
+            {window.innerWidth <= 768 && (
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                  BÖLÜM SORUMLUSU
+                </label>
+                <input
+                  type="text"
+                  name="bolumSorumlusu"
+                  value={productionForm.bolumSorumlusu}
+                  onChange={handleProductionChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #e1e5e9',
+                    fontSize: '0.95rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box'
+                  }}
+                  placeholder="Bölüm sorumlusu"
+                />
               </div>
-              <table style={{
-                width: '100%',
-                background: 'var(--background-light)',
-                borderRadius: '16px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                overflow: 'hidden',
-                fontSize: '0.95rem',
-                border: '1px solid var(--border-color)'
+            )}
+
+            {/* Fifth Row - ÜRÜN KODU & YAPILAN İŞLEM */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : 'repeat(5, 1fr)', 
+              gap: window.innerWidth <= 768 ? '1rem' : '1.5rem' 
+            }}>
+              {window.innerWidth <= 768 && (
+                <div>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                    ÜRÜN KODU
+                  </label>
+                  <input
+                    type="text"
+                    name="urunKodu"
+                    value={productionForm.urunKodu}
+                    onChange={handleProductionChange}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid #e1e5e9',
+                      fontSize: '0.95rem',
+                      background: '#ffffff',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="Ürün kodu"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                  YAPILAN İŞLEM
+                </label>
+                <select
+                  name="yapilanIslem"
+                  value={productionForm.yapilanIslem}
+                  onChange={handleProductionChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #e1e5e9',
+                    fontSize: '0.95rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="">Seçiniz</option>
+                  <option value="GENEL İŞLEM">GENEL İŞLEM</option>
+                  <option value="TORNA 1.YÖN">TORNA 1.YÖN</option>
+                  <option value="TORNA 2.YÖN">TORNA 2.YÖN</option>
+                  <option value="DELİK 1.YÖN">DELİK 1.YÖN</option>
+                  <option value="DELİK 2.YÖN (ABS)">DELİK 2.YÖN (ABS)</option>
+                  <option value="ÇİFT TABLA">ÇİFT TABLA</option>
+                </select>
+              </div>
+
+              {window.innerWidth > 768 && (
+                <>
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      ÜRETİM ADEDİ
+                    </label>
+                    <input
+                      type="number"
+                      name="uretimAdedi"
+                      value={productionForm.uretimAdedi}
+                      onChange={handleProductionChange}
+                      required
+                      min="0"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e1e5e9',
+                        fontSize: '0.95rem',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      DÖKÜM HATASI
+                    </label>
+                    <input
+                      type="number"
+                      name="dokumHatasi"
+                      value={productionForm.dokumHatasi}
+                      onChange={handleProductionChange}
+                      min="0"
+                      maxLength="2"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e1e5e9',
+                        fontSize: '0.95rem',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      OPERATÖR HATASI
+                    </label>
+                    <input
+                      type="number"
+                      name="operatorHatasi"
+                      value={productionForm.operatorHatasi}
+                      onChange={handleProductionChange}
+                      min="0"
+                      maxLength="2"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e1e5e9',
+                        fontSize: '0.95rem',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      OPERASYON SÜRESİ (sn)
+                    </label>
+                    <input
+                      type="number"
+                      name="operasyonSuresi"
+                      value={productionForm.operasyonSuresi}
+                      onChange={handleProductionChange}
+                      min="0"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e1e5e9',
+                        fontSize: '0.95rem',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                      İŞ BAŞLANGIÇ
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        value={productionForm.isBaslangic}
+                        readOnly
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          borderRadius: '8px',
+                          border: '1px solid #e1e5e9',
+                          fontSize: '0.95rem',
+                          background: '#f9fafb',
+                          boxSizing: 'border-box',
+                          color: '#374151'
+                        }}
+                        placeholder="Başlatılmadı"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const now = new Date();
+                          const timeStr = now.toTimeString().slice(0, 8);
+                          setProductionForm(prev => ({ ...prev, isBaslangic: timeStr }));
+                        }}
+                        style={{
+                          padding: '12px 24px',
+                          background: '#10b981',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '0.9rem',
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        Başlat
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Mobile: Sixth Row - ÜRETİM ADEDİ */}
+            {window.innerWidth <= 768 && (
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                  ÜRETİM ADEDİ
+                </label>
+                <input
+                  type="number"
+                  name="uretimAdedi"
+                  value={productionForm.uretimAdedi}
+                  onChange={handleProductionChange}
+                  required
+                  min="0"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #e1e5e9',
+                    fontSize: '0.95rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box'
+                  }}
+                  placeholder="0"
+                />
+              </div>
+            )}
+
+            {/* Mobile: Seventh Row - DÖKÜM HATASI & OPERATÖR HATASI */}
+            {window.innerWidth <= 768 && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                    DÖKÜM HATASI
+                  </label>
+                  <input
+                    type="number"
+                    name="dokumHatasi"
+                    value={productionForm.dokumHatasi}
+                    onChange={handleProductionChange}
+                    min="0"
+                    max="99"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid #e1e5e9',
+                      fontSize: '0.95rem',
+                      background: '#ffffff',
+                      boxSizing: 'border-box',
+                      textAlign: 'center'
+                    }}
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                    OPERATÖR HATASI
+                  </label>
+                  <input
+                    type="number"
+                    name="operatorHatasi"
+                    value={productionForm.operatorHatasi}
+                    onChange={handleProductionChange}
+                    min="0"
+                    max="99"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid #e1e5e9',
+                      fontSize: '0.95rem',
+                      background: '#ffffff',
+                      boxSizing: 'border-box',
+                      textAlign: 'center'
+                    }}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Mobile: Eighth Row - OPERASYON SÜRESİ */}
+            {window.innerWidth <= 768 && (
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                  OPERASYON SÜRESİ (sn)
+                </label>
+                <input
+                  type="number"
+                  name="operasyonSuresi"
+                  value={productionForm.operasyonSuresi}
+                  onChange={handleProductionChange}
+                  min="0"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #e1e5e9',
+                    fontSize: '0.95rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box'
+                  }}
+                  placeholder="0"
+                />
+              </div>
+            )}
+
+            {/* Mobile: Ninth Row - İŞ BAŞLANGIÇ */}
+            {window.innerWidth <= 768 && (
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                  İŞ BAŞLANGIÇ
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    value={productionForm.isBaslangic}
+                    readOnly
+                    style={{
+                      flex: 1,
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid #e1e5e9',
+                      fontSize: '0.95rem',
+                      background: '#f9fafb',
+                      boxSizing: 'border-box',
+                      color: '#374151'
+                    }}
+                    placeholder="Başlatılmadı"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const now = new Date();
+                      const timeStr = now.toTimeString().slice(0, 8);
+                      setProductionForm(prev => ({ ...prev, isBaslangic: timeStr }));
+                    }}
+                    style={{
+                      padding: '12px 24px',
+                      background: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Başlat
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Chronometer Section */}
+            <div style={{ 
+              marginTop: '1rem',
+              padding: window.innerWidth <= 768 ? '1rem' : '1.5rem',
+              background: 'var(--background-gray)',
+              borderRadius: '12px',
+              border: '1px solid var(--border-color)'
+            }}>
+              <h4 style={{ 
+                color: 'var(--primary-color)', 
+                marginBottom: '1rem',
+                fontSize: window.innerWidth <= 768 ? '1rem' : '1.1rem',
+                fontWeight: 600
               }}>
-                <thead style={{ background: 'var(--background-gray)' }}>
-                  <tr>
-                    <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Tarih</th>
-                    <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Ürün Kodu</th>
-                    <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Fire Adedi</th>
-                    <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Hata Türü</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fireRecords.length === 0 ? (
-                    <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-light)', padding: '24px', fontSize: '1rem' }}>Kayıt yok</td></tr>
-                  ) : (
-                    fireRecords.map((rec, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.date}</td>
-                        <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.productCode}</td>
-                        <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.quantity}</td>
-                        <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.errorType}</td>
-                      </tr>
-                    ))
+                Duruş Süreleri
+              </h4>
+              
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : 'repeat(2, 1fr)',
+                gap: '1rem'
+              }}>
+                {/* TEZGAH ARIZASI */}
+                <div style={{ 
+                  padding: '1rem',
+                  background: 'white',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)'
+                }}>
+                  <div style={{ marginBottom: '0.75rem', fontWeight: 600, color: 'var(--text-dark)', fontSize: '0.9rem' }}>
+                    TEZGAH ARIZASI
+                  </div>
+                  <div style={{ 
+                    fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem',
+                    fontWeight: 'bold',
+                    color: timers.tezgahArizasi.running ? '#ef4444' : 'var(--primary-color)',
+                    marginBottom: '0.75rem',
+                    fontFamily: 'monospace',
+                    textAlign: 'center'
+                  }}>
+                    {formatTime(timers.tezgahArizasi.seconds)}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => startTimer('tezgahArizasi')}
+                      disabled={timers.tezgahArizasi.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.tezgahArizasi.running ? '#d1d5db' : '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.tezgahArizasi.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Başlat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => pauseTimer('tezgahArizasi')}
+                      disabled={!timers.tezgahArizasi.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: !timers.tezgahArizasi.running ? '#d1d5db' : '#f59e0b',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: !timers.tezgahArizasi.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Duraklat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stopTimer('tezgahArizasi')}
+                      disabled={timers.tezgahArizasi.seconds === 0}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.tezgahArizasi.seconds === 0 ? '#d1d5db' : '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.tezgahArizasi.seconds === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Durdur
+                    </button>
+                  </div>
+                  {productionForm.tezgahArizasi > 0 && (
+                    <div style={{ marginTop: '0.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-light)' }}>
+                      Kaydedilen: {formatTime(productionForm.tezgahArizasi)}
+                    </div>
                   )}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
-
-        {/* Gün Raporu Sekmesi */}
-        {activeTab === 'rapor' && (
-          <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ color: 'var(--primary-color)', margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Günlük Rapor</h3>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <button type="button" style={{ 
-                  background: 'var(--accent-color)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  padding: '8px 20px', 
-                  fontWeight: 500, 
-                  cursor: 'pointer', 
-                  fontSize: '0.95rem', 
-                  boxShadow: '0 2px 8px rgba(16,185,129,0.15)',
-                  transition: 'all 0.2s ease'
-                }}
-                  onClick={handleGunRaporuRefresh}>Raporu Güncelle</button>
-                <button type="button" style={{ 
-                  background: 'var(--secondary-color)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  padding: '8px 20px', 
-                  fontWeight: 500, 
-                  cursor: 'pointer', 
-                  fontSize: '0.95rem', 
-                  boxShadow: '0 2px 8px rgba(59,130,246,0.15)',
-                  transition: 'all 0.2s ease'
-                }}
-                onClick={() => downloadCSV(gunRaporu, ['productCode','uretimAdet','paketlemeAdet','errorTypeCount','dokumHatasiCount'], 'gun_raporu.csv')}>CSV olarak indir</button>
-              </div>
-            </div>
-            <table style={{
-              width: '100%',
-              background: 'var(--background-light)',
-              borderRadius: '16px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-              overflow: 'hidden',
-              fontSize: '0.95rem',
-              border: '1px solid var(--border-color)'
-            }}>
-              <thead style={{ background: 'var(--background-gray)' }}>
-                <tr>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Ürün Kodu</th>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Üretim Adedi</th>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Paketleme Adedi</th>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Fire Adedi</th>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Dokum Hatası</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {gunRaporu.length === 0 ? (
-                  <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-light)', padding: '24px', fontSize: '1rem' }}>Rapor verisi yok</td></tr>
-                ) : (
-                  gunRaporu.map((rec, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.productCode}</td>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.uretimAdet}</td>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.paketlemeAdet}</td>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.errorTypeCount}</td>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.dokumHatasiCount}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-          </div>
-        )}
-
-        {/* Y Kapama Listesi Sekmesi */}
-        {activeTab === 'ykapama' && (
-          <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ color: 'var(--primary-color)', margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Y Kapama Listesi</h3>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <button type="button" style={{ 
-                  background: 'var(--accent-color)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  padding: '8px 20px', 
-                  fontWeight: 500, 
-                  cursor: 'pointer', 
-                  fontSize: '0.95rem', 
-                  boxShadow: '0 2px 8px rgba(16,185,129,0.15)',
-                  transition: 'all 0.2s ease'
-                }}
-                  onClick={handleYKapamaRefresh}>Listeyi Güncelle</button>
-                <button type="button" style={{ 
-                  background: 'var(--secondary-color)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  padding: '8px 20px', 
-                  fontWeight: 500, 
-                  cursor: 'pointer', 
-                  fontSize: '0.95rem', 
-                  boxShadow: '0 2px 8px rgba(59,130,246,0.15)',
-                  transition: 'all 0.2s ease'
-                }}
-                  onClick={() => downloadCSV(yKapamaVeri, ['date','shift','productCode','operator','process','quantity'], 'y_kapama_listesi.csv')}>CSV olarak indir</button>
-              </div>
                 </div>
-            <table style={{
-              width: '100%',
-              background: 'var(--background-light)',
-              borderRadius: '16px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-              overflow: 'hidden',
-              fontSize: '0.95rem',
-              border: '1px solid var(--border-color)'
-            }}>
-              <thead style={{ background: 'var(--background-gray)' }}>
-                <tr>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Tarih</th>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Vardiya</th>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Ürün Kodu</th>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Operatör</th>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>İşlem</th>
-                  <th style={{ padding: '12px', background: 'var(--background-gray)', color: 'var(--primary-color)', fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>Adet</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {yKapamaVeri.length === 0 ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-light)', padding: '24px', fontSize: '1rem' }}>Y kapama verisi yok</td></tr>
-                ) : (
-                  yKapamaVeri.map((rec, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.date}</td>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.shift}</td>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.productCode}</td>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.operator}</td>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.process}</td>
-                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-light)' }}>{rec.quantity}</td>
-                      </tr>
-                    ))
+
+                {/* TEZGAH AYARI */}
+                <div style={{ 
+                  padding: '1rem',
+                  background: 'white',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)'
+                }}>
+                  <div style={{ marginBottom: '0.75rem', fontWeight: 600, color: 'var(--text-dark)', fontSize: '0.9rem' }}>
+                    TEZGAH AYARI
+                  </div>
+                  <div style={{ 
+                    fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem',
+                    fontWeight: 'bold',
+                    color: timers.tezgahAyari.running ? '#ef4444' : 'var(--primary-color)',
+                    marginBottom: '0.75rem',
+                    fontFamily: 'monospace',
+                    textAlign: 'center'
+                  }}>
+                    {formatTime(timers.tezgahAyari.seconds)}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => startTimer('tezgahAyari')}
+                      disabled={timers.tezgahAyari.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.tezgahAyari.running ? '#d1d5db' : '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.tezgahAyari.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Başlat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => pauseTimer('tezgahAyari')}
+                      disabled={!timers.tezgahAyari.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: !timers.tezgahAyari.running ? '#d1d5db' : '#f59e0b',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: !timers.tezgahAyari.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Duraklat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stopTimer('tezgahAyari')}
+                      disabled={timers.tezgahAyari.seconds === 0}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.tezgahAyari.seconds === 0 ? '#d1d5db' : '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.tezgahAyari.seconds === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Durdur
+                    </button>
+                  </div>
+                  {productionForm.tezgahAyari > 0 && (
+                    <div style={{ marginTop: '0.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-light)' }}>
+                      Kaydedilen: {formatTime(productionForm.tezgahAyari)}
+                    </div>
                   )}
-                </tbody>
-              </table>
+                </div>
+
+                {/* ELMAS DEĞİŞİMİ */}
+                <div style={{ 
+                  padding: '1rem',
+                  background: 'white',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)'
+                }}>
+                  <div style={{ marginBottom: '0.75rem', fontWeight: 600, color: 'var(--text-dark)', fontSize: '0.9rem' }}>
+                    ELMAS DEĞİŞİMİ
+                  </div>
+                  <div style={{ 
+                    fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem',
+                    fontWeight: 'bold',
+                    color: timers.elmasDegisimi.running ? '#ef4444' : 'var(--primary-color)',
+                    marginBottom: '0.75rem',
+                    fontFamily: 'monospace',
+                    textAlign: 'center'
+                  }}>
+                    {formatTime(timers.elmasDegisimi.seconds)}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => startTimer('elmasDegisimi')}
+                      disabled={timers.elmasDegisimi.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.elmasDegisimi.running ? '#d1d5db' : '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.elmasDegisimi.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Başlat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => pauseTimer('elmasDegisimi')}
+                      disabled={!timers.elmasDegisimi.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: !timers.elmasDegisimi.running ? '#d1d5db' : '#f59e0b',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: !timers.elmasDegisimi.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Duraklat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stopTimer('elmasDegisimi')}
+                      disabled={timers.elmasDegisimi.seconds === 0}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.elmasDegisimi.seconds === 0 ? '#d1d5db' : '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.elmasDegisimi.seconds === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Durdur
+                    </button>
+                  </div>
+                  {productionForm.elmasDegisimi > 0 && (
+                    <div style={{ marginTop: '0.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-light)' }}>
+                      Kaydedilen: {formatTime(productionForm.elmasDegisimi)}
+                    </div>
+                  )}
+                </div>
+
+                {/* PARÇA BEKLEME */}
+                <div style={{ 
+                  padding: '1rem',
+                  background: 'white',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)'
+                }}>
+                  <div style={{ marginBottom: '0.75rem', fontWeight: 600, color: 'var(--text-dark)', fontSize: '0.9rem' }}>
+                    PARÇA BEKLEME
+                  </div>
+                  <div style={{ 
+                    fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem',
+                    fontWeight: 'bold',
+                    color: timers.parcaBekleme.running ? '#ef4444' : 'var(--primary-color)',
+                    marginBottom: '0.75rem',
+                    fontFamily: 'monospace',
+                    textAlign: 'center'
+                  }}>
+                    {formatTime(timers.parcaBekleme.seconds)}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => startTimer('parcaBekleme')}
+                      disabled={timers.parcaBekleme.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.parcaBekleme.running ? '#d1d5db' : '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.parcaBekleme.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Başlat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => pauseTimer('parcaBekleme')}
+                      disabled={!timers.parcaBekleme.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: !timers.parcaBekleme.running ? '#d1d5db' : '#f59e0b',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: !timers.parcaBekleme.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Duraklat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stopTimer('parcaBekleme')}
+                      disabled={timers.parcaBekleme.seconds === 0}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.parcaBekleme.seconds === 0 ? '#d1d5db' : '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.parcaBekleme.seconds === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Durdur
+                    </button>
+                  </div>
+                  {productionForm.parcaBekleme > 0 && (
+                    <div style={{ marginTop: '0.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-light)' }}>
+                      Kaydedilen: {formatTime(productionForm.parcaBekleme)}
+                    </div>
+                  )}
+                </div>
+
+                {/* TEMİZLİK */}
+                <div style={{ 
+                  padding: '1rem',
+                  background: 'white',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)',
+                  gridColumn: window.innerWidth <= 768 ? 'auto' : 'span 2'
+                }}>
+                  <div style={{ marginBottom: '0.75rem', fontWeight: 600, color: 'var(--text-dark)', fontSize: '0.9rem' }}>
+                    TEMİZLİK
+                  </div>
+                  <div style={{ 
+                    fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem',
+                    fontWeight: 'bold',
+                    color: timers.temizlik.running ? '#ef4444' : 'var(--primary-color)',
+                    marginBottom: '0.75rem',
+                    fontFamily: 'monospace',
+                    textAlign: 'center'
+                  }}>
+                    {formatTime(timers.temizlik.seconds)}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => startTimer('temizlik')}
+                      disabled={timers.temizlik.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.temizlik.running ? '#d1d5db' : '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.temizlik.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Başlat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => pauseTimer('temizlik')}
+                      disabled={!timers.temizlik.running}
+                      style={{
+                        padding: '8px 16px',
+                        background: !timers.temizlik.running ? '#d1d5db' : '#f59e0b',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: !timers.temizlik.running ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Duraklat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stopTimer('temizlik')}
+                      disabled={timers.temizlik.seconds === 0}
+                      style={{
+                        padding: '8px 16px',
+                        background: timers.temizlik.seconds === 0 ? '#d1d5db' : '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: timers.temizlik.seconds === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      Durdur
+                    </button>
+                  </div>
+                  {productionForm.temizlik > 0 && (
+                    <div style={{ marginTop: '0.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-light)' }}>
+                      Kaydedilen: {formatTime(productionForm.temizlik)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* İŞ BİTİŞ */}
+            <div style={{ marginTop: '1rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
+                İŞ BİTİŞ
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={productionForm.isBitis}
+                  readOnly
+                  style={{
+                    flex: 1,
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #e1e5e9',
+                    fontSize: '0.95rem',
+                    background: '#f9fafb',
+                    boxSizing: 'border-box',
+                    color: '#374151'
+                  }}
+                  placeholder="Bitirilmedi"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const now = new Date();
+                    const timeStr = now.toTimeString().slice(0, 8);
+                    
+                    // Stop all running timers and save their values
+                    Object.keys(timers).forEach(timerName => {
+                      if (timers[timerName].running && intervals[timerName]) {
+                        clearInterval(intervals[timerName]);
+                        setProductionForm(prev => ({
+                          ...prev,
+                          [timerName]: timers[timerName].seconds,
+                          isBitis: timeStr
+                        }));
+                      }
+                    });
+                    
+                    // Reset all timer states to stopped
+                    setTimers({
+                      tezgahArizasi: { running: false, seconds: 0 },
+                      tezgahAyari: { running: false, seconds: 0 },
+                      elmasDegisimi: { running: false, seconds: 0 },
+                      parcaBekleme: { running: false, seconds: 0 },
+                      temizlik: { running: false, seconds: 0 }
+                    });
+                    
+                    // Clear all intervals
+                    setIntervals({});
+                    
+                    // Set end time
+                    setProductionForm(prev => ({ ...prev, isBitis: timeStr }));
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    background: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Bitir
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="submit"
+                style={{
+                  background: 'var(--secondary-color)',
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '14px 48px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(59,130,246,0.2)',
+                  transition: 'all 0.2s ease',
+                  width: window.innerWidth <= 768 ? '100%' : 'auto'
+                }}
+              >
+                Kaydet
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Records Table */}
+        <div style={{
+          background: 'white',
+          borderRadius: window.innerWidth <= 768 ? 12 : 20,
+          boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+          padding: window.innerWidth <= 768 ? '1rem' : '2rem',
+          border: '1px solid #f3f4f6'
+        }}>
+          <h3 style={{ 
+            color: 'var(--primary-color)', 
+            marginBottom: '1.5rem',
+            fontSize: window.innerWidth <= 768 ? '1.1rem' : '1.25rem'
+          }}>Kayıtlar</h3>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table style={{ 
+              width: '100%', 
+              fontSize: window.innerWidth <= 768 ? '0.75rem' : '0.9rem', 
+              borderCollapse: 'collapse',
+              minWidth: window.innerWidth <= 768 ? '800px' : 'auto'
+            }}>
+              <thead>
+                <tr style={{ background: 'var(--background-gray)', borderBottom: '2px solid var(--border-color)' }}>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>TARİH</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>VARD.</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>HAT</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>TEZGAH</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>OPERATÖR</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>SORUMLU</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>ÜRÜN</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>İŞLEM</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>ADET</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>DÖKÜM H.</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>OP. H.</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>OP. SÜRESİ</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>İŞ BAŞ.</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>T. ARIZA</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>T. AYAR</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>ELMAS D.</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>P. BEKLEME</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>TEMİZLİK</th>
+                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>İŞ BİT.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productionRecords.length === 0 ? (
+                  <tr>
+                    <td colSpan="19" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-light)' }}>
+                      Henüz kayıt bulunmamaktadır
+                    </td>
+                  </tr>
+                ) : (
+                  productionRecords.map((record, index) => (
+                    <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{record.tarih}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{record.vardiya}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.hatNo}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.tezgahNo}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.operator}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.bolumSorumlusu}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.urunKodu}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.yapilanIslem}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.uretimAdedi}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.dokumHatasi || '-'}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.operatorHatasi || '-'}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.operasyonSuresi || '-'}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.isBaslangic || '-'}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.tezgahArizasi ? formatTime(record.tezgahArizasi) : '-'}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.tezgahAyari ? formatTime(record.tezgahAyari) : '-'}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.elmasDegisimi ? formatTime(record.elmasDegisimi) : '-'}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.parcaBekleme ? formatTime(record.parcaBekleme) : '-'}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.temizlik ? formatTime(record.temizlik) : '-'}</td>
+                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.isBitis || '-'}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

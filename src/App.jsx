@@ -67,6 +67,7 @@ function App() {
             <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
             <Route path="/pwa" element={<PageTransition><PWA /></PageTransition>} />
             <Route path="/utf" element={<PageTransition><Utf /></PageTransition>} />
+            <Route path="/prototypeutf" element={<PageTransition><Utf /></PageTransition>} />
           </Routes>
         </main>
         <Footer />
