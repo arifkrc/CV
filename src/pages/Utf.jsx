@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { authAPI, productionAPI } from '../services/api';
 
 const getToday = () => {
   const d = new Date();
@@ -8,22 +9,45 @@ const getToday = () => {
 const Utf = () => {
   // Login state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Credentials
-  const VALID_USERNAME = 'admin';
-  const VALID_PASSWORD = 'admin123';
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const user = localStorage.getItem('currentUser');
+    if (token && user) {
       setIsLoggedIn(true);
-      setLoginError('');
-    } else {
-      setLoginError('Kullanıcı adı veya şifre hatalı!');
+      setCurrentUser(JSON.parse(user));
     }
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setLoginError('');
+
+    try {
+      const response = await authAPI.login({ email, password });
+      setIsLoggedIn(true);
+      setCurrentUser(response.user);
+      setEmail('');
+      setPassword('');
+    } catch (error) {
+      console.error('Login error:', error);
+      setLoginError(error.message || 'Giriş başarısız! Lütfen bilgilerinizi kontrol edin.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    authAPI.logout();
+    setIsLoggedIn(false);
+    setCurrentUser(null);
   };
 
   // Production form state
@@ -49,7 +73,15 @@ const Utf = () => {
     isBitis: ''
   });
 
-  const [productionRecords, setProductionRecords] = useState([]);
+  // Set operator name when logged in
+  useEffect(() => {
+    if (isLoggedIn && currentUser) {
+      setProductionForm(prev => ({
+        ...prev,
+        operator: currentUser.fullName
+      }));
+    }
+  }, [isLoggedIn, currentUser]);
 
   // Timer states
   const [timers, setTimers] = useState({
@@ -119,6 +151,7 @@ const Utf = () => {
 
   const handleProductionSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     
     // Clear any running timers
     Object.keys(intervals).forEach(key => {
@@ -126,44 +159,31 @@ const Utf = () => {
     });
 
     try {
-      // Send data as JSON
+      // Prepare data for backend API
       const data = {
         tarih: productionForm.tarih,
-        vardiya: productionForm.vardiya,
+        vardiyaNo: productionForm.vardiya,
         hatNo: productionForm.hatNo,
         tezgahNo: productionForm.tezgahNo,
-        operator: productionForm.operator,
-        bolumSorumlusu: productionForm.bolumSorumlusu,
+        operatorId: currentUser.id, // UUID from logged-in user
+        bolumSorumlusuId: currentUser.id, // For now, using same user ID
         urunKodu: productionForm.urunKodu,
         yapilanIslem: productionForm.yapilanIslem,
-        uretimAdedi: productionForm.uretimAdedi,
-        dokumHatasi: productionForm.dokumHatasi || '0',
-        operatorHatasi: productionForm.operatorHatasi || '0',
-        tezgahArizasi: productionForm.tezgahArizasi || '0',
-        tezgahAyari: productionForm.tezgahAyari || '0',
-        elmasDegisimi: productionForm.elmasDegisimi || '0',
-        parcaBekleme: productionForm.parcaBekleme || '0',
-        temizlik: productionForm.temizlik || '0',
-        isBaslangic: productionForm.isBaslangic || '',
-        isBitis: productionForm.isBitis || ''
+        uretimAdedi: parseInt(productionForm.uretimAdedi),
+        dokumHatasi: parseInt(productionForm.dokumHatasi) || 0,
+        operatorHatasi: parseInt(productionForm.operatorHatasi) || 0,
+        islemHatasi: 0,
+        tezgahArizasi: Math.floor(productionForm.tezgahArizasi / 60) || 0, // Seconds to minutes
+        tezgahAyari: Math.floor(productionForm.tezgahAyari / 60) || 0,
+        elmasDegisimi: Math.floor(productionForm.elmasDegisimi / 60) || 0,
+        parcaBekleme: Math.floor(productionForm.parcaBekleme / 60) || 0,
+        temizlik: Math.floor(productionForm.temizlik / 60) || 0,
+        isBaslangic: productionForm.isBaslangic || '00:00',
+        isBitis: productionForm.isBitis || '00:00',
+        molaVar: 0
       };
 
-      const response = await fetch('https://script.google.com/macros/s/AKfycbww09-DcNJKE_AyIui2JxneYeiJ_AEroxn3pJLtk9jx/dev', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain',
-        },
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      
-      // Add to local records regardless of Google Sheets response
-      setProductionRecords([...productionRecords, productionForm]);
+      const response = await productionAPI.createRecord(data);
       
       // Reset form
       setProductionForm({
@@ -171,7 +191,7 @@ const Utf = () => {
         vardiya: '',
         hatNo: '',
         tezgahNo: '',
-        operator: '',
+        operator: currentUser.fullName,
         bolumSorumlusu: '',
         urunKodu: '',
         yapilanIslem: '',
@@ -196,49 +216,13 @@ const Utf = () => {
       });
       setIntervals({});
 
-      if (result.status === 'success') {
-        alert('Veri başarıyla kaydedildi!');
-      } else if (result.status === 'error') {
-        alert('Google Sheets hatası:\n\n' + result.message);
-      } else {
-        alert('Veri kaydedildi!\n\nTam yanıt:\n' + JSON.stringify(result, null, 2));
-      }
+      alert('✅ Üretim kaydı başarıyla oluşturuldu!');
       
     } catch (error) {
-      // Still save locally and reset form even if Google Sheets fails
-      setProductionRecords([...productionRecords, productionForm]);
-      
-      setProductionForm({
-        tarih: getToday(),
-        vardiya: '',
-        hatNo: '',
-        tezgahNo: '',
-        operator: '',
-        bolumSorumlusu: '',
-        urunKodu: '',
-        yapilanIslem: '',
-        uretimAdedi: '',
-        dokumHatasi: '',
-        operatorHatasi: '',
-        operasyonSuresi: '',
-        isBaslangic: '',
-        tezgahArizasi: 0,
-        tezgahAyari: 0,
-        elmasDegisimi: 0,
-        parcaBekleme: 0,
-        temizlik: 0,
-        isBitis: ''
-      });
-      setTimers({
-        tezgahArizasi: { running: false, seconds: 0 },
-        tezgahAyari: { running: false, seconds: 0 },
-        elmasDegisimi: { running: false, seconds: 0 },
-        parcaBekleme: { running: false, seconds: 0 },
-        temizlik: { running: false, seconds: 0 }
-      });
-      setIntervals({});
-      
-      alert('Veri yerel olarak kaydedildi. Google Sheets hatası: ' + error.message);
+      console.error('Production record error:', error);
+      alert('❌ Hata: ' + (error.message || 'Kayıt oluşturulamadı!'));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -271,20 +255,20 @@ const Utf = () => {
           
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
-              <label htmlFor="username" style={{ 
+              <label htmlFor="email" style={{ 
                 fontWeight: 600, 
                 fontSize: '0.95rem', 
                 color: 'var(--text-dark)', 
                 marginBottom: '0.5rem', 
                 display: 'block' 
               }}>
-                Kullanıcı Adı
+                E-posta
               </label>
               <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -296,7 +280,7 @@ const Utf = () => {
                   transition: 'all 0.2s ease',
                   boxSizing: 'border-box'
                 }}
-                placeholder="Kullanıcı adınızı girin"
+                placeholder="E-posta adresinizi girin"
                 required
               />
             </div>
@@ -348,21 +332,22 @@ const Utf = () => {
 
             <button
               type="submit"
+              disabled={isLoading}
               style={{
-                background: 'var(--secondary-color)',
+                background: isLoading ? '#9ca3af' : 'var(--secondary-color)',
                 color: 'white',
                 fontWeight: 600,
                 fontSize: '1rem',
                 border: 'none',
                 borderRadius: '12px',
                 padding: '14px 24px',
-                cursor: 'pointer',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
                 boxShadow: '0 4px 16px rgba(59,130,246,0.2)',
                 transition: 'all 0.2s ease',
                 width: '100%'
               }}
             >
-              Giriş Yap
+              {isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
             </button>
           </form>
         </div>
@@ -382,9 +367,12 @@ const Utf = () => {
           marginBottom: '1.5rem',
           gap: '1rem'
         }}>
-          <h2 style={{ color: 'var(--primary-color)', margin: 0, fontSize: window.innerWidth <= 768 ? '1.25rem' : '1.5rem' }}>Üretim Takip Formu</h2>
+          <h2 style={{ color: 'var(--primary-color)', margin: 0, fontSize: window.innerWidth <= 768 ? '1.25rem' : '1.5rem' }}>
+            Üretim Takip Formu {currentUser && <span style={{ fontSize: '0.9rem', fontWeight: 400 }}>- {currentUser.fullName}</span>}
+          </h2>
           <button
-            onClick={() => setIsLoggedIn(false)}
+            onClick={handleLogout}
+            disabled={isLoading}
             style={{
               background: '#ef4444',
               color: 'white',
@@ -392,9 +380,10 @@ const Utf = () => {
               borderRadius: '8px',
               padding: '10px 24px',
               fontWeight: 600,
-              cursor: 'pointer',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
               boxShadow: '0 4px 16px rgba(239,68,68,0.2)',
-              width: window.innerWidth <= 768 ? '100%' : 'auto'
+              width: window.innerWidth <= 768 ? '100%' : 'auto',
+              opacity: isLoading ? 0.6 : 1
             }}
           >
             Çıkış Yap
@@ -1566,104 +1555,26 @@ const Utf = () => {
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <button
                 type="submit"
+                disabled={isLoading}
                 style={{
-                  background: 'var(--secondary-color)',
+                  background: isLoading ? '#9ca3af' : 'var(--secondary-color)',
                   color: 'white',
                   fontWeight: 600,
                   fontSize: '1rem',
                   border: 'none',
                   borderRadius: '12px',
                   padding: '14px 48px',
-                  cursor: 'pointer',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
                   boxShadow: '0 4px 16px rgba(59,130,246,0.2)',
                   transition: 'all 0.2s ease',
-                  width: window.innerWidth <= 768 ? '100%' : 'auto'
+                  width: window.innerWidth <= 768 ? '100%' : 'auto',
+                  opacity: isLoading ? 0.6 : 1
                 }}
               >
-                Kaydet
+                {isLoading ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
             </div>
           </form>
-        </div>
-
-        {/* Records Table */}
-        <div style={{
-          background: 'white',
-          borderRadius: window.innerWidth <= 768 ? 12 : 20,
-          boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-          padding: window.innerWidth <= 768 ? '1rem' : '2rem',
-          border: '1px solid #f3f4f6'
-        }}>
-          <h3 style={{ 
-            color: 'var(--primary-color)', 
-            marginBottom: '1.5rem',
-            fontSize: window.innerWidth <= 768 ? '1.1rem' : '1.25rem'
-          }}>Kayıtlar</h3>
-          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-            <table style={{ 
-              width: '100%', 
-              fontSize: window.innerWidth <= 768 ? '0.75rem' : '0.9rem', 
-              borderCollapse: 'collapse',
-              minWidth: window.innerWidth <= 768 ? '800px' : 'auto'
-            }}>
-              <thead>
-                <tr style={{ background: 'var(--background-gray)', borderBottom: '2px solid var(--border-color)' }}>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>TARİH</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>VARD.</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>HAT</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>TEZGAH</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>OPERATÖR</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>SORUMLU</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>ÜRÜN</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>İŞLEM</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>ADET</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>DÖKÜM H.</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>OP. H.</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>OP. SÜRESİ</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>İŞ BAŞ.</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>T. ARIZA</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>T. AYAR</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>ELMAS D.</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>P. BEKLEME</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>TEMİZLİK</th>
-                  <th style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>İŞ BİT.</th>
-                </tr>
-              </thead>
-              <tbody>
-                {productionRecords.length === 0 ? (
-                  <tr>
-                    <td colSpan="19" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-light)' }}>
-                      Henüz kayıt bulunmamaktadır
-                    </td>
-                  </tr>
-                ) : (
-                  productionRecords.map((record, index) => (
-                    <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{record.tarih}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{record.vardiya}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.hatNo}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.tezgahNo}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.operator}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.bolumSorumlusu}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.urunKodu}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.yapilanIslem}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.uretimAdedi}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.dokumHatasi || '-'}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.operatorHatasi || '-'}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.operasyonSuresi || '-'}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.isBaslangic || '-'}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.tezgahArizasi ? formatTime(record.tezgahArizasi) : '-'}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.tezgahAyari ? formatTime(record.tezgahAyari) : '-'}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.elmasDegisimi ? formatTime(record.elmasDegisimi) : '-'}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.parcaBekleme ? formatTime(record.parcaBekleme) : '-'}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.temizlik ? formatTime(record.temizlik) : '-'}</td>
-                      <td style={{ padding: window.innerWidth <= 768 ? '8px 4px' : '12px 8px', color: 'var(--text-light)' }}>{record.isBitis || '-'}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
     </div>
